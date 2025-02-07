@@ -1,25 +1,35 @@
+import { Callout } from 'nextra/components'
+
 # Fejlesztői környezet
 
-Fejlesztői környezetnek a [**Visual Studio Code**](https://code.visualstudio.com/)-ot használtuk.
+Általunk használt fejlesztői környezetek:
 
-További fejlesztés során használt rendszerek:
-
+- [VS Code](https://code.visualstudio.com/)
 - [Cursor](https://www.cursor.com/)
 - [JetBrains WebStorm](https://www.cursor.com/)
 
+<Callout emoji="💡">
+    A következő bővítményeket ajánljuk a VS Code-hoz: **ESLint, Prettier, Auto Import, Bun, GitHub Copilot, Tailwind CSS Intellisense, Thunder Client**.
+</Callout>
+
 ## Hardver
 
-Egy **Lenovo ThinkCentre M80s** PC-t használtunk a fejlesztés során amely a következőket tartalmazza:
+Egy **Lenovo ThinkCentre M80s** típusú számítógépet használtunk a fejlesztés nagy részében, amely a következő specifikációkkal rendelkezik:
 
-- Processzor: **Intel core i5-10400 2.90GHz,**
-- Memória: **8GB 2667 MT/s**
+- Processzor: **Intel Core I5-10400**
+- Memória: **8GB**
 
-Operációs rendszerek, amiken dolgoztunk:
+Az alábbi operációs rendszereken fejlesztettük a webalkalmazást:
 
-- **Windows 11 Pro x64,**
-- **Arch Linux x86_64**
+- **Windows 11 Pro**
+- **Arch Linux**
 
 ## Futtatási környezet:
 
 - Node.js: **v22.13.1 (a fejlesztés idejében a legújabb LTS verzió)**
-- Bun: **v1.1.45**
+- Bun: **v1.1.45 (a fejlesztés idejében a legújabb verzió)**
+
+## Verziókezelés
+
+A verziókezeléshez a **Git** verziókezelő rendszert használtuk, és a forráskódot a **GitHub**-on tároljuk.
+Az ütközések elkerülése érdekében feature branch-eket használtunk, és egy adott részfeladat elkészítése után pull request-et nyitottunk a development branch-be való merge-eléshez.
