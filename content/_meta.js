@@ -1,5 +1,8 @@
 const meta = {
-    index: ""
+    index: "",
+    developer: {
+        title: "Fejlesztőknek",
+    }
 };
 
 export default meta
