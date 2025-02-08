@@ -52,7 +52,7 @@ export default async function RootLayout({
           }
           search={<Search placeholder="Keresés..." />}
           themeSwitch={{ dark: "Sötét", light: "Világos", system: "Rendszer" }}
-          toc={{ title: "Tartalomjegyzék:" }}
+          toc={{ title: "Tartalomjegyzék:", backToTop: "Vissza a tetejére" }}
         >
           {children}
         </Layout>
