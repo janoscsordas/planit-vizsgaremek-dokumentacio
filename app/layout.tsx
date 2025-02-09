@@ -1,6 +1,7 @@
 import { Footer, LastUpdated, Layout, Navbar } from "nextra-theme-docs"
 import { Banner, Head, Search } from "nextra/components"
 import { getPageMap } from "nextra/page-map"
+import "./globals.css"
 import "nextra-theme-docs/style.css"
 
 export const metadata = {
