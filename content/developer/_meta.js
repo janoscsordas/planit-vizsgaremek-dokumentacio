@@ -1,7 +1,8 @@
 const meta = {
     overview: "",
     framework: "",
-    packages: ""
+    packages: "",
+    database: "",
 }
 
 export default meta

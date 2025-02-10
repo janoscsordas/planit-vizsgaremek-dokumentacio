@@ -1,0 +1,150 @@
+---
+sidebarTitle: Adatbázis Kapcsolat
+---
+
+# Adatbázis Kapcsolatok
+
+Az alkalmazás kettő **PostgreSQL** adatbázishoz kapcsolódik. Az előbbi a [Neon Serverless Postgres](https://neon.tech/)-nél kerül hostolásra, míg az utóbbi [Supabase](https://supabase.com/)-nél. A **Neon** adatbázis kapcsolat kiépítéséhez a [Drizzle ORM](https://orm.drizzle.team/)-et vettük igénybe, míg a **Supabase**-nél a [supabase-js](https://supabase.com/docs/reference/javascript/introduction) SDK-t.
+
+## Neon Adatbázis (planit-db)
+
+Ez az adatbázis 10 táblával büszkélkedhet, melyek a következők:
+
+---
+
+### **User Tábla**
+
+A felhasználó adatai kerülnek eltárolásra ebben a táblában.
+
+- `id` (Text)
+    - Random UUID-t kap.
+    - A felhasználó egyedi azonosítója (elsődleges kulcs).
+
+- `name` (Text)
+
+    - A felhasználó regisztrációkor megadott neve.
+
+- `email` (Text)
+
+    - A felhasználó e-mail címe.
+
+- `emailVerified` (Timestamp)
+
+    - Időzóna specifikus.
+    - A regisztráció megerősítésének időpillanatát tárolja.
+
+- `password` (Text)
+
+    - A felhasználó jelszava
+    - Hash-elt érték kerül eltárolásra (A Password Hashing-et a Bun-ba beépített függvénnyel oldottuk meg.)
+
+- `birthDate` (Timestamp)
+
+    - A felhasználó beállított születésnapját tárolja.
+
+- `tier` (Enum)
+
+    - Két értéket kaphat: **free** vagy **paid**.
+
+- `image` (Text)
+
+    - A felhasználó által feltöltött kép url címét tárolja.
+
+- `nameChangedAt` (Timestamp)
+
+    - Értéket akkor kap, mikor a felhasználó megváltoztatja a nevét. 90 naponta van erre lehetőség.
+
+- `imageChangedAt` (Timestamp)
+
+    - Értéket akkor kap, mikor a felhasználó megváltoztatja a profilképét. 90 naponta van erre lehetőség.
+
+- `createdAt` (Timestamp)
+
+    - A felhasználó regisztrációjának idejét tárolja.
+
+### **Account Tábla**
+
+Az Account tábla az OAuth-al regisztrált felhasználókról tárol további adatokat.
+
+- `userId` (Text)
+
+    - A **user** tábla `id` mezőjével áll relation-ben.
+
+- `type` (Text)
+
+    - A szolgáltató típusa. Ez például a GitHubnál a következő: OAuth
+
+- `provider` (Text)
+
+    - A szolgáltató neve. Jelen esetben *github* vagy *google*.
+
+- `providerAccountId` (Text)
+
+    - A szolgáltatói fiók egyedi azonosítója.
+
+- `refresh_token` (Text)
+
+    - A szolgáltató által kiadott token, amivel új access tokent lehet kérni amikor az lejár.
+
+- `access_token` (Text)
+
+    - A védett erőforrások eléréséhez használt token.
+
+- `expires_at` (Integer)
+
+    - Az access token lejárati időpontja.
+
+- `token_type` (Text)
+
+    - A token típusa, általában "Bearer".
+
+- `scope` (Text)
+
+    - Az access token által engedélyezett jogosultságok listája.
+    - Például "email profile" - email cím és profil információk lekérése
+
+- `id_token` (Text)
+
+    - JWT token ami a felhasználó személyazonosságát igazolja.
+    - Tartalmazza a felhasználó alapvető adatait.
+
+- `session_state` (Text)
+
+    - A szolgáltató oldali session állapotának azonosítója.
+    - Opcionális, nem minden provider használja.
+
+### **Session Tábla**
+
+A felhasználó bejelentkezéskor kap egy session token-t, ez itt kerül eltárolásra elősegítve az alkalmazás biztonságát.
+
+- `sessionToken` (Text)
+
+    - Bejelentkezéskor kapott session token, mellyel hozzáférést kapnak a felhasználók az alkalmazáshoz.
+
+- `userId` (Text)
+
+    - A **user** tábla `id` mezőjével áll relation-ben.
+
+- `expires` (Timestamp)
+
+    - Adott idő, amikor a sessionToken lejár. (30 nap)
+
+### **VerificationToken Tábla**
+
+- `identifier` (Text)
+
+    - Egyedi azonosító a Verification Token-nek
+
+- `token` (Text)
+
+    - Az emailben elküldött URL-ben található token, az azonosítás érdekében eltárolva ebben a mezőben.
+
+- `expires` (Timestamp)
+
+    - A Token lejárati dátuma.
+
+## Alább megtekinthető az adatbázis diagramja
+
+---
+
+<img src="https://raw.githubusercontent.com/janoscsordas/planit-vizsgaremek-osszes/21fa46f319bc0153d92ea976d73d7e9f7ae559ae/assets/DBDiagram.svg" />
