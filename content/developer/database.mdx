@@ -36,8 +36,9 @@ A felhasználó adatai kerülnek eltárolásra ebben a táblában.
 `password` (Text)
 
     - A felhasználó jelszava
-    - Hash-elt érték kerül eltárolásra (A Password Hashing-et a Bun-ba beépített függvénnyel oldottuk meg.)
- 
+    - Hash-elt érték kerül eltárolásra (A Password Hashing-et a **bcrypt** **hash** függvényével oldottuk meg.)
+    - Az **OAuth**-al regisztált felhasználóknak **nincs** jelszavuk.
+
 `birthDate` (Timestamp)
 
     - A felhasználó beállított születésnapját tárolja.
@@ -72,7 +73,7 @@ Az Account tábla az OAuth-al regisztrált felhasználókról tárol további ad
 
 `type` (Text)
 
-    - A szolgáltató típusa. Ez például a GitHubnál a következő: OAuth
+    - A szolgáltató típusa. Ez például a GitHubnál a következő: **OAuth**
 
 `provider` (Text)
 
@@ -135,7 +136,7 @@ Regisztrációkor kapott token itt kerül tárolásra, amellyel hitelesíteni tu
 
 `identifier` (Text)
 
-    - Egyedi azonosító a Verification Token-nek
+    - Egyedi azonosító a Verification Token-nek.
 
 `token` (Text)
 
@@ -379,7 +380,7 @@ A projekthez tartozó problémákat tároljuk ebben a táblában.
 
     - Annak a tagnak az azonosítója a **user** táblából, aki ezt a problémát nyitotta meg.
 
-### **Project Issue Replies**
+### **Project Issue Replies Tábla**
 
 A Problémához kapcsolódó válaszokat tároljuk ebben a táblában.
 
@@ -427,7 +428,7 @@ Encrypt-elve kerülnek eltárolásra.
 
 `project_id` (Text)
 
-    - A projekt azonosítója, amelyhez az üezenet tartozik.
+    - A projekt azonosítója, amelyhez az üzenet tartozik.
 
 `content` (Text)
 
@@ -436,7 +437,7 @@ Encrypt-elve kerülnek eltárolásra.
 
 `is_edited` (Boolean)
 
-    - True vagy False, attól függetlenül, hogy az üzenet szerkesztve lett e vagy sem.
+    - True vagy False, attól függetlenül, hogy az üzenet szerkesztve lett vagy sem.
 
 `created_at` (Timestamp)
 
