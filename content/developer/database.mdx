@@ -8,7 +8,7 @@ Az alkalmazás kettő **PostgreSQL** adatbázishoz kapcsolódik. Az előbbi a [N
 
 ## Neon Adatbázis (planit-db)
 
-Ez az adatbázis 10 táblával büszkélkedhet, melyek a következők:
+Ez az adatbázis 13 táblával büszkélkedhet, melyek a következők:
 
 ---
 
@@ -16,49 +16,49 @@ Ez az adatbázis 10 táblával büszkélkedhet, melyek a következők:
 
 A felhasználó adatai kerülnek eltárolásra ebben a táblában.
 
-- `id` (Text)
+`id` (Text)
     - Random UUID-t kap.
     - A felhasználó egyedi azonosítója (elsődleges kulcs).
 
-- `name` (Text)
+`name` (Text)
 
     - A felhasználó regisztrációkor megadott neve.
 
-- `email` (Text)
+`email` (Text)
 
     - A felhasználó e-mail címe.
 
-- `emailVerified` (Timestamp)
+`emailVerified` (Timestamp)
 
     - Időzóna specifikus.
     - A regisztráció megerősítésének időpillanatát tárolja.
 
-- `password` (Text)
+`password` (Text)
 
     - A felhasználó jelszava
     - Hash-elt érték kerül eltárolásra (A Password Hashing-et a Bun-ba beépített függvénnyel oldottuk meg.)
-
-- `birthDate` (Timestamp)
+ 
+`birthDate` (Timestamp)
 
     - A felhasználó beállított születésnapját tárolja.
 
-- `tier` (Enum)
+`tier` (Enum)
 
     - Két értéket kaphat: **free** vagy **paid**.
 
-- `image` (Text)
+`image` (Text)
 
     - A felhasználó által feltöltött kép url címét tárolja.
 
-- `nameChangedAt` (Timestamp)
+`nameChangedAt` (Timestamp)
 
     - Értéket akkor kap, mikor a felhasználó megváltoztatja a nevét. 90 naponta van erre lehetőség.
 
-- `imageChangedAt` (Timestamp)
+`imageChangedAt` (Timestamp)
 
     - Értéket akkor kap, mikor a felhasználó megváltoztatja a profilképét. 90 naponta van erre lehetőség.
 
-- `createdAt` (Timestamp)
+`createdAt` (Timestamp)
 
     - A felhasználó regisztrációjának idejét tárolja.
 
@@ -66,49 +66,49 @@ A felhasználó adatai kerülnek eltárolásra ebben a táblában.
 
 Az Account tábla az OAuth-al regisztrált felhasználókról tárol további adatokat.
 
-- `userId` (Text)
+`userId` (Text)
 
     - A **user** tábla `id` mezőjével áll relation-ben.
 
-- `type` (Text)
+`type` (Text)
 
     - A szolgáltató típusa. Ez például a GitHubnál a következő: OAuth
 
-- `provider` (Text)
+`provider` (Text)
 
     - A szolgáltató neve. Jelen esetben *github* vagy *google*.
 
-- `providerAccountId` (Text)
+`providerAccountId` (Text)
 
     - A szolgáltatói fiók egyedi azonosítója.
 
-- `refresh_token` (Text)
+`refresh_token` (Text)
 
     - A szolgáltató által kiadott token, amivel új access tokent lehet kérni amikor az lejár.
 
-- `access_token` (Text)
+`access_token` (Text)
 
     - A védett erőforrások eléréséhez használt token.
 
-- `expires_at` (Integer)
+`expires_at` (Integer)
 
     - Az access token lejárati időpontja.
 
-- `token_type` (Text)
+`token_type` (Text)
 
     - A token típusa, általában "Bearer".
 
-- `scope` (Text)
+`scope` (Text)
 
     - Az access token által engedélyezett jogosultságok listája.
     - Például "email profile" - email cím és profil információk lekérése
 
-- `id_token` (Text)
+`id_token` (Text)
 
     - JWT token ami a felhasználó személyazonosságát igazolja.
     - Tartalmazza a felhasználó alapvető adatait.
 
-- `session_state` (Text)
+`session_state` (Text)
 
     - A szolgáltató oldali session állapotának azonosítója.
     - Opcionális, nem minden provider használja.
@@ -117,34 +117,357 @@ Az Account tábla az OAuth-al regisztrált felhasználókról tárol további ad
 
 A felhasználó bejelentkezéskor kap egy session token-t, ez itt kerül eltárolásra elősegítve az alkalmazás biztonságát.
 
-- `sessionToken` (Text)
+`sessionToken` (Text)
 
     - Bejelentkezéskor kapott session token, mellyel hozzáférést kapnak a felhasználók az alkalmazáshoz.
 
-- `userId` (Text)
+`userId` (Text)
 
     - A **user** tábla `id` mezőjével áll relation-ben.
 
-- `expires` (Timestamp)
+`expires` (Timestamp)
 
     - Adott idő, amikor a sessionToken lejár. (30 nap)
 
 ### **VerificationToken Tábla**
 
-- `identifier` (Text)
+Regisztrációkor kapott token itt kerül tárolásra, amellyel hitelesíteni tudja a felhasználó a regisztrációját.
+
+`identifier` (Text)
 
     - Egyedi azonosító a Verification Token-nek
 
-- `token` (Text)
+`token` (Text)
 
     - Az emailben elküldött URL-ben található token, az azonosítás érdekében eltárolva ebben a mezőben.
 
-- `expires` (Timestamp)
+`expires` (Timestamp)
 
     - A Token lejárati dátuma.
+
+### **Chat Conversations Tábla**
+
+Ez a tábla egy párbeszédet tárol, amihez egy másik táblában az üzenetek kerülnek hozzárendelésre.
+
+`id` (Text)
+
+    - UUID
+    - A párbeszéd sor egyedi azonosítója.
+
+`user_id` (Text)
+
+    - A **user** tábla `id` mezőjével áll relation-ben.
+
+`title` (Text)
+
+    - A párbeszéd elkészítésekor kapott cím.
+
+`createdAt` (Timestamp)
+
+    - A párbeszéd elkészítési idejét tárolja.
+
+### **Chat Messages Tábla**
+
+Ez a tábla tárolja a Planie AI-al való üzenetváltásokat.
+
+`id` (Text)
+    - UUID
+    - Az üzenetek egyedi azonosítója
+
+`conversation_id` (Text)
+
+    - Az adott párbeszéd azonosítóját tárolja, amivel össze lehet kötni az üzenetet.
+
+`user_id` (Text)
+
+    - A **user** tábla `id` mezőjével áll relation-ben.
+    - Ezzel kötjük vissza a user táblához az üzeneteket.
+
+`user_input` (Text)
+
+    - A felhasználó által elküldött üzenet.
+
+`bot_response` (Text)
+
+    - A Planie AI által válaszolt üzenet.
+
+`createdAt` (Timestamp)
+
+    - Az üzenet készítésének időpontja kerül eltárolásra.
+
+### **Daily Message Counts Tábla**
+
+Ez a tábla a napi AI üzenet limitet tartja számon. Ez a szám napi 20 üzenet a **free** tier-nél.
+
+`user_id` (Text)
+
+    - A **user** tábla `id` mezőjével áll relation-ben.
+
+`date` (Timestamp)
+
+    - A napi időpontot tárolja, amellyel megmondható a napi limit.
+
+`count` (integer)
+
+    - A napi üzenetek számát tárolja.
+
+### **Projects Tábla**
+
+A készített projektekről tárol adatokat, illetve az itt tárolt azonosítóval lehet kapcsolatba hozni az altáblák adatait.
+
+`id` (Text)
+
+    - UUID
+    - A projekt egyedi azonosítója.
+
+`user_id` (Text)
+
+    - A **user** táblából kapott id, amivel beazonosítjuk, hogy kihez tartozik a projekt.
+
+`name` (Text)
+
+    - A projekt nevét tárolja.
+
+`createdAt` (Timestamp)
+
+    - A projekt készítésének idejét tárolja.
+
+`tier` (Enum)
+
+    - Kettő értéket kaphat: **free** vagy **paid**.
+
+`status` (Enum)
+
+    - Három értéket kaphat: **active**, **completed** vagy **archived**.
+
+`nameChanged` (Timestamp)
+
+    - A projekt nevének módosítási időpontját tárolja. 90 naponta lehetséges nevet változtatni.
+
+### **Project Members Tábla**
+
+A projekt tagokat tárolja, a **projekt** tábla id-jával áll kapcsolatban, így kerül összeköttetésre a két tábla.
+
+`id` (Text)
+
+    - UUID
+    - A projekt tag azonosítója.
+
+`project_id` (Text)
+
+    - UUID
+    - Ezáltal kerül azonosításra a tag, hogy milyen projekt tagja.
+
+`user_id` (Text)
+
+    - UUID
+    - Így kerül visszakapcsolásra a **user** táblával a tag.
+
+`role` (Enum)
+
+    - Kettő értéket kaphat: **member**, illetve **admin**.
+
+`addedAt` (Timestamp)
+
+    - A projekthez felvétel pillanatát tárolja.
+
+### **Project Tasks Tábla**
+
+A projekthez tartozó feladatokat tárolja ez a tábla.
+
+`id` (Text)
+
+    - UUID
+    - Egy projekt feladat azonosítója.
+
+`project_id` (Text)
+
+    - UUID
+    - Ezáltal kerül az adott projekttel összekapcsolásra a feladat.
+
+`task_name` (Text)
+
+    - Egy adott feladat címét tárolja.
+
+`task_description` (Text)
+
+    - Egy adott feladat leírása.
+
+`status` (Enum)
+
+    - Három féle értéket kaphat: **pending**, **in progress** vagy **completed**
+
+`priority` (Enum)
+
+    - Három féle értéket kaphat: **low**, **medium** vagy **high**
+
+`createdAt` (Timestamp)
+
+    - A feladat készítésének idejét tárolja.
+
+`created_by` (Text)
+
+    - Az adott felhasználó azonosítóját tárolja, aki a feladatot készítette.
+
+### **Project Task Assigns Tábla**
+
+A feladathoz kiadott felhasználó adata, összekötve a **user** táblával.
+
+`id` (Text)
+
+    - UUID
+    - egyedi azonosító
+
+`task_id` (Text)
+
+    - UUID
+    - Egy adott feladat azonosítója, amelyhez egy tag ki lett osztva.
+
+`user_id` (Text)
+
+    - UUID
+    - A felhasználó azonosítója, aki ki lett rendelve a feladathoz.
+
+`assignedAt` (Timestamp)
+
+    - A kirendelés időpontja.
+
+### **Project Issues Tábla**
+
+A projekthez tartozó problémákat tároljuk ebben a táblában.
+
+`id` (Text)
+
+    - UUID
+    - A projekt probléma egyedi azonosítója
+
+`project_id` (Text)
+
+    - UUID
+    - A projekt azonosítója, amelyhez a probléma tartozik.
+
+`issue_name` (Text)
+
+    - A probléma címe.
+
+`issue_description` (Text)
+
+    - A probléma leírása.
+
+`task_issue_id` (Text)
+
+    - UUID
+    - Lehet NULL értéke, egy adott feladatot lehet hozzárendelni a problémához.
+
+`is_open` (Boolean)
+
+    - True vagy False. Ha True akkor a probléma nyitva áll, egyébként pedig Lezárt.
+
+`replies` (Integer)
+
+    - A válaszok számát tartalmazza. Alapértéke **0**.
+
+`labels` (Text[])
+
+    - Alap címkéket hozzáadni a problémához.
+
+`opened_at` (Timestamp)
+
+    - A probléma megnyitásának időpontját tárolja.
+
+`opened_by` (Text)
+
+    - Annak a tagnak az azonosítója a **user** táblából, aki ezt a problémát nyitotta meg.
+
+### **Project Issue Replies**
+
+A Problémához kapcsolódó válaszokat tároljuk ebben a táblában.
+
+`id` (Text)
+
+    - UUID
+    - A probléma válasz egyedi azonosítója.
+
+`issue_id` (Text)
+
+    - UUID
+    - A probléma azonosítója, amelyhez a válasz érkezett.
+
+`reply` (Text)
+
+    - A válaszüzenet szöveget tárolja.
+
+`replied_at` (Timestamp)
+
+    - Válasz elküldésének idejét tárolja.
+
+`replied_by` (Text)
+
+    - UUID
+    - Annak a felhasználónak az azonosítóját tárolja, aki a problémára válaszolt.
+
+## Supabase Adatbázis
+
+Ez az adatbázis kettő táblát tartalmaz. Azért kerültek ide, mivel **supabase**-n megvalósítható a Real Time funkció, így valós időben hallgathatjuk a változásokat a táblákban.
+
+---
+
+### **Messages Tábla**
+
+A projekten belüli üzeneteket tárolja, amelyek valós időben frissülnek az oldalon.
+Encrypt-elve kerülnek eltárolásra.
+
+`id` (UUID)
+
+    - Az üzenet egyedi azonosítója.
+
+`user_id` (Text)
+
+    - A felhasználó azonosítója, aki az üzenetet küldte.
+
+`project_id` (Text)
+
+    - A projekt azonosítója, amelyhez az üezenet tartozik.
+
+`content` (Text)
+
+    - Az üzenetben tárolt szöveg.
+    - Encrypt-elt üzenetet tároljuk el, CryptoJS-el encrypt-elve.
+
+`is_edited` (Boolean)
+
+    - True vagy False, attól függetlenül, hogy az üzenet szerkesztve lett e vagy sem.
+
+`created_at` (Timestamp)
+
+    - Az üzenet elküldésének időpontja.
+
+### **Notifications Tábla**
+
+A projekt meghívókat tárolja, amelyek valós időben kerülnek frissítésre az alkalmazásban.
+
+`id` (Integer)
+
+    - Az értesítés egyedi azonosítója
+
+`senderId` (Text)
+
+    - A felhasználónak az egyedi azonosítója, aki a meghívót küldte.
+
+`senderProjectId` (Text)
+
+    - A projekt azonosítója, amelybe a meghívó szól.
+
+`receiverId` (Text)
+
+    - A felhasználó azonosítója, akinek a meghívó érkezett.
+
+`created_at` (Timestamp)
+
+    - A meghívó elküldésének ideje
 
 ## Alább megtekinthető az adatbázis diagramja
 
 ---
 
-<img src="https://raw.githubusercontent.com/janoscsordas/planit-vizsgaremek-osszes/21fa46f319bc0153d92ea976d73d7e9f7ae559ae/assets/DBDiagram.svg" />
+<img src="https://raw.githubusercontent.com/janoscsordas/planit-vizsgaremek-osszes/ac8c7f1f499de52f42e4519b4d93320958569a75/assets/DBDiagram.svg" />
