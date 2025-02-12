@@ -3,6 +3,7 @@ const meta = {
     framework: "",
     packages: "",
     database: "",
+    files: "",
 }
 
 export default meta
