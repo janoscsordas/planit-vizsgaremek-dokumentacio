@@ -1,0 +1,253 @@
+---
+sidebarTitle: Profilkép Kezelés
+title: Profilkép Kezelés
+---
+
+# Profilképek Kezelése és Tárolása
+
+## Áttekintés
+
+A profilkép kezelő komponens lehetővé teszi a felhasználó számára, hogy személyre szabja a profiljának kinézetét. A funkció beépített korlátozással rendelkezik az erőforrások optimális felhasználása érdekében.
+
+## Főbb Jellemzők
+
+- Felhasználónként egy profilkép tárolása
+- 90 napos korlátozás a profilkép módosítására
+- Automatikus optimalizálás
+- Biztonságos tárolás az [uploadthing](https://uploadthing.com/) nevezetű felhőalapú szolgáltatásban
+
+## Technikai Specifikáció
+
+```typescript
+// Erre az útvonalra megy ki kérés, amikor az uploadthing-re sikeresen feltöltődik a fájl.
+POST /api/user/profile-picture
+- Követelmények:
+    - OK response az uploadthing-től
+    - userId és a feltöltött fájl url címe
+- Válasz: {
+    message: string
+}
+
+// Az uploadthing által előre elkészített API route, amellyel feltölthető a kép a felhőjükbe.
+POST /api/uploadthing
+- Követelmények:
+    - Autentikált felhasználó
+    - Maximum fájlméret: 2MB
+    - Támogatott formátumok: .jpg, .jpeg, .png, .webp
+- Válasz: {
+    uploadedBy: string, 
+    fileUrl: string
+}
+```
+
+## Időzítési Logika
+
+```typescript
+// Először lekérdezzük a user adatát
+const [imageChangedAt] = await db
+    .select()
+    .from(UsersTable)
+    .where(eq(UsersTable.id, session.user.id))
+    .limit(1)
+// Aztán pedig egy elágazásban megvizsgáljuk date-fns segítségével,
+// hogy az `imageChangedAt` mezőben található (ha van) időpont óta eltelt e 90 nap.
+if (
+    imageChangedAt.imageChangedAt &&
+    differenceInDays(new Date(), imageChangedAt.imageChangedAt) < 90
+) {
+    return NextResponse.json({
+        error: `Legközelebb csak ${90 - differenceInDays(new Date(), imageChangedAt.imageChangedAt)} nap múlva módosíthatod a profilképet!`,
+    })
+}
+// Ha nem, akkor a function tovább fut.
+```
+
+## Hibakezelés
+
+```typescript
+const { fileUrl, uploadedBy } = await request.json()
+// Ha nem található az uploadthing route által küldött fileUrl vagy uploadedBy,
+// visszatérünk egy üzenettel
+if (!fileUrl || !uploadedBy) {
+    return NextResponse.json(
+      { error: "Hiba történt a profilkép változtatása közben!" },
+      { status: 400 }
+    )
+}
+// Illetve, ha a Query nem küld vissza adatot ->
+const [updateProfilePicture] = await db
+    .update(UsersTable)
+    .set({ image: fileUrl, imageChangedAt: new Date() })
+    .where(eq(UsersTable.id, session.user.id))
+    .returning({
+      id: UsersTable.id,
+      image: UsersTable.image,
+})
+// visszatérünk egy hiba üzenettel.
+if (!updateProfilePicture) {
+    return NextResponse.json(
+      { error: "Hiba történt a profilkép változtatása közben!" },
+      { status: 400 }
+    )
+}
+``` 
+
+```typescript {14-20}
+onClientUploadComplete={async (res) => {
+    // Calling the API Route
+    const response = await fetch("/api/user/profile-picture", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+            fileUrl: res[0].url,
+            uploadedBy: userId,
+        }),
+    })
+
+    // Ha az API válasz nem OK, visszatérünk egy hiba üzenettel
+    if (!response.ok) {
+        const error = await response.json()
+        throw new Error(
+            error.message || "Hiba történt a profilképék módosítása közben!"
+        )
+    }
+
+    // ----- A function további része ------
+}}
+```
+
+Egy speciális **uploadthing** function-ben elkapjuk a hibát:
+
+```typescript {1-9}
+onUploadError={(error: Error) => {
+    // A hibaüzenet kijelzése egy toaster-rel.
+    toast({
+        title: "Hiba történt!",
+        description: error.message,
+        variant: "destructive",
+        duration: 3000,
+    })
+}}
+```
+
+## Használati Példa
+
+```typescript
+// Kliens oldali implementáció (Next.js)
+"use client"
+
+import { useToast } from "@/hooks/use-toast"
+import { UploadDropzone } from "@/lib/utils/uploadthing"
+import { differenceInDays } from "date-fns"
+import { Loader2Icon } from "lucide-react"
+import { useRouter } from "next/navigation"
+
+export default function ProfilePictureForm({
+  imageChangedAt,
+  userId,
+}: {
+  imageChangedAt: Date | null
+  userId: string
+}) {
+  const { toast } = useToast()
+  const router = useRouter()
+
+  return (
+    <section className="p-4 mt-6 border rounded-md border-muted">
+      <h4 className="text-sm font-medium">Profilkép</h4>
+      <p className="mt-1 mb-3 text-[.8rem] text-muted-foreground">
+        Itt tudsz újat beállítani:
+      </p>
+      <UploadDropzone
+        disabled={
+          imageChangedAt
+            ? differenceInDays(new Date(), imageChangedAt) < 90
+            : false
+        }
+        content={{
+          button({ ready, isUploading }) {
+            if (ready) return <div>Kép feltöltése</div>
+            if (isUploading)
+              return (
+                <div className="flex items-center gap-2">
+                  <Loader2Icon className="animate-spin" /> Feltöltés...
+                </div>
+              )
+
+            return "Betöltés..."
+          },
+          allowedContent({ ready, fileTypes, isUploading, files }) {
+            if (!ready) return "Engedélyezett fájltípusok keresése"
+            if (isUploading) return "Úgy tűnik valamit éppen feltöltesz"
+            return `Fájl, amit feltölthetsz: ${fileTypes.join(", ")}. Max 2MB`
+          },
+          label({ ready, isDragActive }) {
+            if (
+              imageChangedAt &&
+              differenceInDays(new Date(), imageChangedAt) < 90
+            )
+              return `Legközelebb csak ${(90 - differenceInDays(new Date(), imageChangedAt)).toString()} nap múlva módosíthatod a profilképedet!`
+            if (!ready) return "Adatok és egyebek betöltése"
+            if (isDragActive) return "Igen, ide húzd a képet!"
+            return "Kattints ide, vagy húzd ide a feltölteni kívánt képet"
+          },
+        }}
+        className={`ut-button:bg-emerald ut-button:text-primary-foreground ut-button:font-sans ${imageChangedAt && differenceInDays(new Date(), imageChangedAt) < 90 ? "ut-button:cursor-not-allowed ut-button:bg-emerald-hover ut-label:cursor-not-allowed pointer-events-none" : ""}`}
+        endpoint="imageUploader"
+        onClientUploadComplete={async (res) => {
+          // Calling the API Route
+          const response = await fetch("/api/user/profile-picture", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              fileUrl: res[0].url,
+              uploadedBy: userId,
+            }),
+          })
+
+          // Checking if the response is not OK
+          if (!response.ok) {
+            const error = await response.json()
+            throw new Error(
+              error.message || "Hiba történt a profilképék módosítása közben!"
+            )
+          }
+
+          const data = await response.json()
+
+          // Displaying the success message
+          toast({
+            title: "Sikeres profilkép módosítás!",
+            description: data.message,
+            duration: 3000,
+            className:
+              "bg-emerald-hover border-emerald text-primary-foreground font-sans",
+          })
+
+          setTimeout(() => {
+            router.refresh()
+          }, 3000)
+        }}
+        onUploadError={(error: Error) => {
+          // Displaying the error with a toast message
+          toast({
+            title: "Hiba történt!",
+            description: error.message,
+            variant: "destructive",
+            duration: 3000,
+          })
+        }}
+      />
+    </section>
+  )
+}
+```
+
+## Továbbfejlesztési Lehetőségek
+
+- Képszerkesztő funkció hozzáadása
+- Feltöltési korlátozás személyre szabása felhasználói szinten.
