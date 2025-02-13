@@ -128,3 +128,53 @@ const [projectAccess] = await db
     .where(eq(ProjectsTable.id, projectId))
     .limit(1)
 ```
+
+### Beszúrás
+
+```typescript
+// Egy rekord beszúrása
+const [conversation] = await db
+    .insert(ChatConversationsTable)
+    .values({
+        userId,
+        title: validatedFields.data.message.length > 32 ? validatedFields.data.message.trim().slice(0, 32) + "..." : validatedFields.data.message.trim(),
+    })
+    .returning({
+        id: ChatConversationsTable.id,
+})
+```
+
+### Törlés
+
+```typescript
+await db
+    .delete(ChatConversationsTable)
+    .where(eq(ChatConversationsTable.id, conversationId))
+```
+
+### Hibakezelés
+
+```typescript
+// Bármilyen hiba történik a query közben, azt a try catch blokk elkapja és visszatér egy hibával
+try {
+    await db
+      .delete(ChatConversationsTable)
+      .where(eq(ChatConversationsTable.id, conversationId))
+} catch (error: any) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Hiba történt!",
+    }
+}
+```
+
+## Karbantartás és Monitorozás
+
+- Query teljesítmény monitorozása
+- Kapcsolatok számának és időtartamának figyelése
+
+## Biztonsági Megfontolások
+
+1. Kapcsolati pooling megfelelő konfigurálása
+2. Minimális jogosultságok elve az adatbázis felhasználónál
+3. Érzékeny adatok titkosítása
