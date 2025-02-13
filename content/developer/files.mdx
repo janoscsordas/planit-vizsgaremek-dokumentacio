@@ -16,6 +16,12 @@ A profilkép kezelő komponens lehetővé teszi a felhasználó számára, hogy 
 - Automatikus optimalizálás
 - Biztonságos tárolás az [uploadthing](https://uploadthing.com/) nevezetű felhőalapú szolgáltatásban
 
+## Környezeti Változók
+
+```env
+UPLOADTHING_TOKEN=""
+```
+
 ## Technikai Specifikáció
 
 ```typescript
@@ -35,7 +41,7 @@ POST /api/uploadthing
     - Maximum fájlméret: 2MB
     - Támogatott formátumok: .jpg, .jpeg, .png, .webp
 - Válasz: {
-    uploadedBy: string, 
+    uploadedBy: string,
     fileUrl: string
 }
 ```
@@ -45,19 +51,21 @@ POST /api/uploadthing
 ```typescript
 // Először lekérdezzük a user adatát
 const [imageChangedAt] = await db
-    .select()
-    .from(UsersTable)
-    .where(eq(UsersTable.id, session.user.id))
-    .limit(1)
+  .select()
+  .from(UsersTable)
+  .where(eq(UsersTable.id, session.user.id))
+  .limit(1)
 // Aztán pedig egy elágazásban megvizsgáljuk date-fns segítségével,
 // hogy az `imageChangedAt` mezőben található (ha van) időpont óta eltelt e 90 nap.
 if (
-    imageChangedAt.imageChangedAt &&
-    differenceInDays(new Date(), imageChangedAt.imageChangedAt) < 90
+  imageChangedAt.imageChangedAt &&
+  differenceInDays(new Date(), imageChangedAt.imageChangedAt) < 90
 ) {
-    return NextResponse.json({
-        error: `Legközelebb csak ${90 - differenceInDays(new Date(), imageChangedAt.imageChangedAt)} nap múlva módosíthatod a profilképet!`,
-    })
+  return NextResponse.json({
+    error: `Legközelebb csak ${
+      90 - differenceInDays(new Date(), imageChangedAt.imageChangedAt)
+    } nap múlva módosíthatod a profilképet!`,
+  })
 }
 // Ha nem, akkor a function tovább fut.
 ```
@@ -69,28 +77,28 @@ const { fileUrl, uploadedBy } = await request.json()
 // Ha nem található az uploadthing route által küldött fileUrl vagy uploadedBy,
 // visszatérünk egy üzenettel
 if (!fileUrl || !uploadedBy) {
-    return NextResponse.json(
-      { error: "Hiba történt a profilkép változtatása közben!" },
-      { status: 400 }
-    )
+  return NextResponse.json(
+    { error: "Hiba történt a profilkép változtatása közben!" },
+    { status: 400 }
+  )
 }
 // Illetve, ha a Query nem küld vissza adatot ->
 const [updateProfilePicture] = await db
-    .update(UsersTable)
-    .set({ image: fileUrl, imageChangedAt: new Date() })
-    .where(eq(UsersTable.id, session.user.id))
-    .returning({
-      id: UsersTable.id,
-      image: UsersTable.image,
-})
+  .update(UsersTable)
+  .set({ image: fileUrl, imageChangedAt: new Date() })
+  .where(eq(UsersTable.id, session.user.id))
+  .returning({
+    id: UsersTable.id,
+    image: UsersTable.image,
+  })
 // visszatérünk egy hiba üzenettel.
 if (!updateProfilePicture) {
-    return NextResponse.json(
-      { error: "Hiba történt a profilkép változtatása közben!" },
-      { status: 400 }
-    )
+  return NextResponse.json(
+    { error: "Hiba történt a profilkép változtatása közben!" },
+    { status: 400 }
+  )
 }
-``` 
+```
 
 ```typescript {14-20}
 onClientUploadComplete={async (res) => {
@@ -188,13 +196,19 @@ export default function ProfilePictureForm({
               imageChangedAt &&
               differenceInDays(new Date(), imageChangedAt) < 90
             )
-              return `Legközelebb csak ${(90 - differenceInDays(new Date(), imageChangedAt)).toString()} nap múlva módosíthatod a profilképedet!`
+              return `Legközelebb csak ${(
+                90 - differenceInDays(new Date(), imageChangedAt)
+              ).toString()} nap múlva módosíthatod a profilképedet!`
             if (!ready) return "Adatok és egyebek betöltése"
             if (isDragActive) return "Igen, ide húzd a képet!"
             return "Kattints ide, vagy húzd ide a feltölteni kívánt képet"
           },
         }}
-        className={`ut-button:bg-emerald ut-button:text-primary-foreground ut-button:font-sans ${imageChangedAt && differenceInDays(new Date(), imageChangedAt) < 90 ? "ut-button:cursor-not-allowed ut-button:bg-emerald-hover ut-label:cursor-not-allowed pointer-events-none" : ""}`}
+        className={`ut-button:bg-emerald ut-button:text-primary-foreground ut-button:font-sans ${
+          imageChangedAt && differenceInDays(new Date(), imageChangedAt) < 90
+            ? "ut-button:cursor-not-allowed ut-button:bg-emerald-hover ut-label:cursor-not-allowed pointer-events-none"
+            : ""
+        }`}
         endpoint="imageUploader"
         onClientUploadComplete={async (res) => {
           // Calling the API Route

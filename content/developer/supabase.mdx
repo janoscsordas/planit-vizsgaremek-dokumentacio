@@ -1,0 +1,165 @@
+---
+sidebarTitle: Supabase
+title: Supabase
+---
+
+# Supabase
+
+## Áttekintés
+
+A projektben a [Supabase](https://supabase.com/)-t használjuk real-time adatbázisként, amely lehetővé teszi az adatok valós idejű szinkronizálását. A rendszer két fő táblát használ: Messages és Notifications táblákat.
+
+**A _@supabase/supabase-js_ csomagot használja az alkalmazás.**
+
+A Supabase-hez szükséges környezeti változók:
+
+## Supabase Inicializálása
+
+A Supabase kliens inicializálása a következőképpen történik:
+
+```typescript
+// supabase.ts
+import { createClient } from "@supabase/supabase-js"
+
+export const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+)
+```
+
+## Környezeti Változók
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=""
+NEXT_PUBLIC_SUPABASE_ANON_KEY=""
+```
+
+## Adatbázis Struktúra
+
+Az adatbázis részletes leírása megtalálható: [itt](/docs/developer/database#supabase-adatbázis)
+
+## Messages Real-time Kezelése React Komponensben
+
+Az alábbi példa bemutatja, hogyan implementálhatjuk a messages tábla real-time kezelését egy React komponensben:
+
+```typescript
+interface Message {
+  id: string
+  project_id: string
+  // ... további message mezők
+}
+
+interface EnrichedMessage extends Message {
+  // ... user details-szel kibővített message típus
+}
+
+// React komponensen belül:
+useEffect(() => {
+  // Üzenetek lekérése a projekthez
+  const fetchMessages = async () => {
+    const { data: messages, error } = await supabase
+      .from("messages")
+      .select("*")
+      .eq("project_id", projectId)
+      .order("created_at", { ascending: true })
+
+    if (error) {
+      setError(error.message)
+      return
+    }
+    const enrichedMessages = await fetchMessageWithUserDetails(messages)
+    setMessages(enrichedMessages)
+  }
+
+  // Real-time feliratkozás a messages táblára
+  const channel = supabase
+    .channel("messages")
+    // INSERT események figyelése
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "messages",
+        filter: `project_id=eq.${projectId}`,
+      },
+      async (payload) => {
+        const newMessage = (
+          await fetchMessageWithUserDetails([payload.new as Message])
+        )[0] as EnrichedMessage
+        setMessages((prevMessages) => [...prevMessages, newMessage])
+      }
+    )
+    // UPDATE események figyelése
+    .on(
+      "postgres_changes",
+      {
+        event: "UPDATE",
+        schema: "public",
+        table: "messages",
+        filter: `project_id=eq.${projectId}`,
+      },
+      async (payload) => {
+        const updatedMessage = (
+          await fetchMessageWithUserDetails([payload.new as Message])
+        )[0] as EnrichedMessage
+        setMessages((prevMessages) =>
+          prevMessages.map((message) =>
+            message.id === updatedMessage.id ? updatedMessage : message
+          )
+        )
+      }
+    )
+    // DELETE események figyelése
+    .on(
+      "postgres_changes",
+      { event: "DELETE", schema: "public", table: "messages" },
+      async (payload) => {
+        setMessages((prevMessages) =>
+          prevMessages.filter(
+            (message) => message.id !== (payload.old as Message).id
+          )
+        )
+      }
+    )
+    .subscribe()
+
+  // Kezdeti üzenetek lekérése
+  fetchMessages()
+
+  // Feliratkozás megszüntetése komponens unmount esetén
+  return () => {
+    supabase.removeChannel(channel)
+  }
+}, [projectId])
+```
+
+## A Kód Működésének Magyarázata
+
+### 1. Kezdeti Adatlekérés
+
+- A `fetchMessages` függvény lekéri az összes üzenetet az adott projekthez
+- Az üzeneteket a created_at mező szerint rendezi
+- A lekért üzeneteket kibővíti felhasználói adatokkal
+
+### 2. Real-time Események Kezelése
+
+- **INSERT**: Új üzenet érkezésekor hozzáadja az üzenetet a meglévő listához
+- **UPDATE**: Üzenet módosításakor frissíti a megfelelő üzenetet a listában
+- **DELETE**: Üzenet törlésekor eltávolítja az üzenetet a listából
+
+### 3. Tisztitás
+
+- A komponens unmount esetén megszünteti a real-time feliratkozást
+
+## Fontos Megjegyzések
+
+- A `fetchMessageWithUserDetails` függvény implementációja szükséges az üzenetek felhasználói adatokkal való kibővítéséhez
+- A projektId props változásakor a useEffect újra lefut, így új feliratkozást hoz létre
+- Az üzenetek state kezelése optimisztikus, azonnal frissíti a UI-t a real-time események alapján
+
+## Hibaelhárítás
+
+- Ellenőrizd, hogy a környezeti változók helyesen vannak-e beállítva
+- Győződj meg róla, hogy a Supabase projekt real-time funkciói engedélyezve vannak
+- Figyeld meg, hogy a console.log üzeneteket a real-time események debuggolásához
