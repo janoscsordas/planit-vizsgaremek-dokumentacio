@@ -6,6 +6,7 @@ const meta = {
   supabase: "",
   drizzle: "",
   files: "",
+  planieai: "",
 }
 
 export default meta

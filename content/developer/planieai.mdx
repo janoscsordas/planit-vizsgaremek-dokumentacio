@@ -1,0 +1,209 @@
+---
+sidebarTitle: Planie AI
+---
+
+# Planie AI
+
+A Planie AI az alkalmazás beépített asszisztens funkciója, amely segíti a felhasználókat a tervezésben és feladatkezelésben. Az asszisztens az OpenAI API-ján keresztül használja a **Mistral AI** modelt, a természetes nyelvi kommunikációhoz. Az asszisztens **még csak angolul ért**.
+
+A **Mistral**-tól a **mistralai/Mistral-7B-Instruct-v0.3** modelt használja az asszisztens. A modelt a [Hugging Face](https://huggingface.co/) Inference API-ról használjuk.
+
+## Funkcionális Leírás
+
+### Képességek
+
+- Természetes angol nyelvű kommunikáció a felhasználóval
+- Feladatok értelmezése és kisegítés
+- Kontextus-alapú segítségnyújtás
+
+### Felhasználói Interakció
+
+- Chat felületen keresztüli kommunikáció
+- Azonnali válaszok
+- Személyre szabott segítségnyújtás
+
+## Technikai Implementáció
+
+### Függőségek
+
+```json
+{
+    "dependencies": {
+        "openai": "^4.77.0",
+    }
+}
+```
+
+### Környezeti Változók
+
+```env
+HUGGING_FACE_API_KEY=""
+```
+
+### AI Inicializálása
+
+```typescript
+const client = new OpenAI({
+  baseURL: "https://api-inference.huggingface.co/v1/",
+  apiKey: process.env.HUGGING_FACE_API_KEY!,
+})
+```
+
+### API Végpontok
+
+Az API végpontok jelen esetben Server Action-ök, amelyek a **Next.js**-be beépített szerver oldali funkciók elvégzésére alkalmas.
+
+A táblák, ahol az AI-al kapcsolatos adatokat tároljuk itt megtekinthetőek: [Chat Messages Tábla](/docs/developer/database#chat-messages-tábla), [Chat Conversations Tábla](/docs/developer/database#chat-conversations-tábla), [Daily Message Counts Tábla](/docs/developer/database#daily-message-counts-tábla).
+
+#### Üzenet Küldése és Válasz az AI-tól
+
+```typescript {}
+const chatCompletion = await client.chat.completions.create({
+    // Megadjuk a kiválasztott modelt
+    model: "mistralai/Mistral-7B-Instruct-v0.3",
+    // Elküldünk 4-4 üzenetet az eddigi beszélgetésből, ha nincs beszélgetés, ezesetben
+    // csak az adott elküldött üzenetet vesszük alapul
+    messages: formattedMessages,
+    // Beállítunk egy értéket a maximum tokenhez
+    max_completion_tokens: NUMBER_OF_TOKENS_FOR_AI_COMPLETION,
+})
+```
+
+### Felhasználói Felület Komponens
+
+```typescript {43-46}
+"use client"
+
+import { User } from "next-auth"
+import { SendIcon } from "lucide-react"
+import { Button } from "../ui/button"
+import { z } from "zod"
+import { toast } from "sonner"
+import { initiateConversation } from "@/actions/aichat.action"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { Spinner } from "@radix-ui/themes"
+import AGTextarea from "./auto-growing-textarea"
+
+export default function ChatComponent({ user }: { user: User }) {
+  const router = useRouter()
+  const [isLoading, setIsLoading] = useState(false)
+  const [message, setMessage] = useState("")
+  {
+    /* AI name: Planie */
+  }
+
+  /* This function will initiate a new conversation with the AI.
+   * Then if everything is successful, it will initiate a new conversation in the db,
+   * and redirect the user to /chat/:chatId.
+   */
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    try {
+      setIsLoading(true)
+      e.preventDefault()
+
+      const validatedMessage = z
+        .string()
+        .max(1536)
+        .nonempty()
+        .safeParse(message)
+
+      if (!validatedMessage.success) {
+        throw new Error("Hibás adatokat adott meg!")
+      }
+
+      // Sending everything we need to the backend
+      // In this case, we are sending the user's message to the AI and the user's id to initiate a new conversation
+      const response = await initiateConversation({
+        message: validatedMessage.data,
+        userId: user.id!,
+      })
+
+      if (!response.success) {
+        throw new Error(response.message)
+      }
+
+      router.push(`/chat/${response.conversationId}`)
+    } catch (error: any) {
+      toast.error(error.message, { position: "top-center" })
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <section className="flex flex-col justify-between h-screen mx-auto w-[95%] sm:w-[85%] md:w-[70%] lg:w-[65%] xl:w-[60%] 2xl:w-[55%]">
+      <div className="w-full h-[90%] rounded-md no-scrollbar overflow-y-scroll flex flex-col gap-2 mt-2">
+        {!isLoading ? (
+          <div className="flex flex-col items-center justify-center h-full gap-2 font-bold selection:bg-emerald">
+            <h2 className="text-3xl text-center">
+              Üdv{" "}
+              <strong className="text-emerald selection:bg-transparent">
+                {user.name}
+              </strong>
+              ! <br /> Miben segíthetek ma?
+            </h2>
+            <small className="text-xs text-muted-foreground">
+              Küldj üzenetet a kezdéshez! Planie még csak angolul tud.
+            </small>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full gap-2 font-bold selection:bg-emerald">
+            <h2 className="text-3xl text-center">
+              Beszélgetés előkészítése...
+            </h2>
+            <Spinner size="3" />
+          </div>
+        )}
+      </div>
+      <div>
+        <form className="flex items-center gap-2 pb-2" onSubmit={handleSubmit}>
+          <AGTextarea
+            isLoading={isLoading}
+            message={message}
+            setMessage={setMessage}
+          />
+          <Button variant={"outline"} type="submit" disabled={isLoading}>
+            {isLoading ? <Spinner /> : <SendIcon size={24} />}
+          </Button>
+        </form>
+        <small className="block pb-2 text-xs text-center text-muted-foreground">
+          Planie hibázhat. A fontos információkat mindig ellenőrizd le!
+        </small>
+      </div>
+    </section>
+  )
+}
+```
+
+### Használat és integráció
+
+```typescript {3, 7}
+// app/chat/page.tsx
+// Importáljuk a komponenst
+import ChatComponent from "@/components/aichat/chat-component"
+
+export default async function Page() {
+    // Kirendereljük az oldalon
+    return <ChatComponent user={session.user} />
+}
+```
+
+### Hibakezelés
+
+- API hívások hibakezelése
+- Felhasználóbarát hibaüzenetek
+
+### Biztonsági Megfontolások
+
+- API kulcs biztonságos kezelése környezeti változóban
+- Felhasználói input validálása
+- Rate limiting implementálása (lásd: [Daily Message Counts Tábla](/docs/developer/database#daily-message-counts-tábla))
+- Érzékeny adatok kezelése
+
+### Továbbfejlesztési Lehetőségek
+
+- Hangalapú Interakció
+- Dokumentum feltöltés, illetve elemzés
+- Többnyelvűség
+- Személyre szabott válaszok fejlesztése
