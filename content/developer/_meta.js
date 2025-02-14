@@ -7,6 +7,9 @@ const meta = {
   drizzle: "",
   files: "",
   planieai: "",
+  ui_libraries: {
+    title: "UI Könyvárak"
+  }
 }
 
 export default meta
