@@ -134,19 +134,19 @@ useEffect(() => {
 
 ## A Kód Működésének Magyarázata
 
-### 1. Kezdeti Adatlekérés
+#### 1. Kezdeti Adatlekérés
 
 - A `fetchMessages` függvény lekéri az összes üzenetet az adott projekthez
-- Az üzeneteket a created_at mező szerint rendezi
+- Az üzeneteket a `created_at` mező szerint rendezi
 - A lekért üzeneteket kibővíti felhasználói adatokkal
 
-### 2. Real-time Események Kezelése
+#### 2. Real-time Események Kezelése
 
 - **INSERT**: Új üzenet érkezésekor hozzáadja az üzenetet a meglévő listához
 - **UPDATE**: Üzenet módosításakor frissíti a megfelelő üzenetet a listában
 - **DELETE**: Üzenet törlésekor eltávolítja az üzenetet a listából
 
-### 3. Tisztitás
+#### 3. Tisztitás
 
 - A komponens unmount esetén megszünteti a real-time feliratkozást
 

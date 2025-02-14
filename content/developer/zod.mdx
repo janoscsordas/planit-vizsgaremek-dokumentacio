@@ -1,0 +1,242 @@
+---
+sidebarTitle: Típusok validálása
+title: Típusok validálása
+---
+
+# Típusok validálása
+
+## Áttekintés
+
+A projektben a [Zod](https://zod.dev/) könyvtárat használjuk típusvalidációra. A Zod egy TypeScript-first séma deklarációs és validációs könyvtár, amely futásidőben biztosítja az adatok típushelyességét.
+
+## Zod telepítése
+
+```bash
+bun add zod
+```
+
+## Projekt Validációs Sémák
+
+### Új Projekt Létrehozása
+
+```typescript
+import { z } from "zod"
+
+export const createProjectSchema = z.object({
+  name: z
+    .string()
+    .min(4, {
+      message: "A projekt nevének minimum 4 karakter hosszúnak kell lennie!",
+    })
+    .max(32, {
+      message: "A projekt neve maximum 32 karakter hosszú lehet!",
+    }),
+})
+```
+
+### Projekt Frissítése
+
+```typescript
+export const updateProjectSchema = z.object({
+  userId: z.string().min(4),
+  name: z
+    .string()
+    .min(4, {
+      message: "A projekt nevének minimum 4 karakter hosszúnak kell lennie!",
+    })
+    .max(32, {
+      message: "A projekt neve maximum 32 karakter hosszú lehet!",
+    })
+    .optional(),
+  tier: z.enum(["free", "paid"]).optional(),
+  status: z.enum(["active", "completed", "archived"]).optional(),
+})
+```
+
+### Projekt Név Módosítása
+
+```typescript
+export const projectChangeFormSchema = z.object({
+  name: z
+    .string()
+    .min(4, {
+      message: "A projekt neve minimum 4 karakter hosszünak kell lennie!",
+    })
+    .max(32, {
+      message: "A projekt neve maximum 32 karakter hosszú lehet!",
+    }),
+})
+```
+
+### Feladat Validációs Séma
+
+```typescript
+export const projectTaskCreationSchema = z.object({
+  taskName: z
+    .string({
+      required_error: "A feladat nevét meg kell adni!",
+      invalid_type_error: "A feladat nevét helyesen kell megadnod!",
+    })
+    .min(4, {
+      message: "A feladat nevének minimum 4 karakter hosszúnak kell lennie!",
+    })
+    .max(128, {
+      message: "A feladat neve maximum 128 karakter hosszú lehet!",
+    }),
+  taskDescription: z
+    .string({
+      required_error: "A feladat leírását meg kell adni!",
+      invalid_type_error: "A feladat leírását helyesen kell megadnod!",
+    })
+    .min(4, {
+      message: "A feladat leírása minimum 4 karakter hosszú lehet!",
+    })
+    .max(512, {
+      message: "A feladat leírása maximum 512 karakter hosszú lehet.",
+    }),
+  status: z.enum(["pending", "in progress", "finished"], {
+    required_error: "A feladat státuszát meg kell adnod!",
+    invalid_type_error: "A feladat státuszát helyesen kell megadnod!",
+  }),
+  priority: z.enum(["low", "medium", "high"], {
+    required_error: "A feladat prioritását meg kell adnod!",
+    invalid_type_error: "A feladat prioritását helyesen kell megadnod!",
+  }),
+})
+```
+
+## Használati Példák
+
+### Új Projekt Létrehozása
+
+```typescript
+async function createProject(formData: FormData) {
+  const validatedData = createProjectSchema.safeParse({
+    name: formData.get("name"),
+  })
+
+  if (!validatedData.success) {
+    return {
+      errors: validatedData.error.flatten().fieldErrors,
+    }
+  }
+
+  // Sikeres validáció után
+  const { name } = validatedData.data
+  // További műveletek...
+}
+```
+
+### Új Feladat Létrehozása
+
+```typescript
+async function createTask(formData: FormData) {
+  const validatedData = projectTaskCreationSchema.safeParse({
+    taskName: formData.get("taskName"),
+    taskDescription: formData.get("taskDescription"),
+    status: formData.get("taskStatus"),
+    priority: formData.get("taskPriority"),
+  })
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message:
+        "Hiba! A megadott adatok nem megfelelőek! A feladat elkészítése sikertelen!",
+    }
+  }
+
+  // Sikeres validáció után
+  const { taskName, taskDescription, status, priority } = validatedFields.data
+  // További műveletek...
+}
+```
+
+## ZodError Kezelése
+
+### Validációs Séma
+
+```typescript
+export const loginSchema = z.object({
+  email: z
+    .string()
+    .email()
+    .min(1, { message: "Email cím megadása kötelező!" })
+    .max(MAX_EMAIL_LENGTH, {
+      message: `Email cím maximum ${MAX_EMAIL_LENGTH} karakter lehet!`,
+    }),
+  password: z
+    .string()
+    .min(1, { message: "Jelszó megadása kötelező!" })
+    .max(32, { message: "Jelszó maximum 32 karakter lehet!" }),
+})
+```
+
+### Hibakezelés megvalósítása a bejelentkezésnél
+
+```typescript {31-49}
+// user.actions.ts
+export async function login({
+  email,
+  password,
+}: {
+  email: string
+  password: string
+}): Promise<{
+  success: boolean
+  data?: UserData
+  message?: Record<string, string> | string
+}> {
+  try {
+    // Adatok validálása
+    await loginSchema.parseAsync({ email, password })
+
+    // A felhasználó megvizsgálása, hogy létezik az adatbázisban
+    const userExists = await getUserFromDb(email, password)
+
+    if (!userExists.success || !userExists.data) {
+      return {
+        success: false,
+        message: { credentials: userExists.message || "Hiba történt!" },
+      }
+    }
+
+    const userData: UserData = userExists.data
+
+    // További bejelentkezési logika...
+    // pl.: authenticate(validatedData)
+  } catch (error: any) {
+    // ZodError speciális kezelése
+    if (error instanceof ZodError) {
+      const formattedErrors = error.errors.reduce(
+        (acc: Record<string, string>, curr) => {
+          // A hiba mezőjének azonosítása (email/password)
+          const field = curr.path[0]?.toString() || "credentials"
+          // Hibaüzenet hozzárendelése a mezőhöz
+          acc[field] = curr.message
+          return acc
+        },
+        {}
+      )
+
+      return {
+        success: false,
+        message: formattedErrors,
+      }
+    }
+
+    // Egyéb hibák kezelése
+    return {
+      success: false,
+      message: { credentials: "Hiba történt a bejelentkezés során!" },
+    }
+  }
+}
+```
+
+## Fontos Megjegyzések
+
+- A `ZodError` kezelése lehetővé teszi a felhasználóbarát hibaüzenetek megjelenítését
+- A hibakezelés mezőspecifikus, így pontosan jelzi, melyik mezőnél van probléma
+- Az általános hibák a "credentials" kulcs alatt jelennek meg
+- A validáció mind kliens-, mind szerveroldali biztonságot nyújt

@@ -1,15 +1,16 @@
 const meta = {
   overview: "",
   framework: "",
-  packages: "",
   database: "",
+  packages: "",
   supabase: "",
   drizzle: "",
   files: "",
+  zod: "",
   planieai: "",
   ui_libraries: {
-    title: "UI Könyvárak"
-  }
+    title: "UI Könyvárak",
+  },
 }
 
 export default meta
