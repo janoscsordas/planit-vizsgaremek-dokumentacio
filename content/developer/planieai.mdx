@@ -26,7 +26,7 @@ A **Mistral**-tól a **mistralai/Mistral-7B-Instruct-v0.3** modelt használja az
 
 ### Függőségek
 
-```json
+```json filename="package.json"
 {
     "dependencies": {
         "openai": "^4.77.0",
@@ -36,13 +36,13 @@ A **Mistral**-tól a **mistralai/Mistral-7B-Instruct-v0.3** modelt használja az
 
 ### Környezeti Változók
 
-```env
+```env filename=".env.local"
 HUGGING_FACE_API_KEY=""
 ```
 
 ### AI Inicializálása
 
-```typescript
+```typescript filename="actions/aichat.action.ts"
 const client = new OpenAI({
   baseURL: "https://api-inference.huggingface.co/v1/",
   apiKey: process.env.HUGGING_FACE_API_KEY!,
@@ -178,8 +178,7 @@ export default function ChatComponent({ user }: { user: User }) {
 
 ### Használat és integráció
 
-```typescript {3, 7}
-// app/chat/page.tsx
+```typescript {2, 6} filename="app/chat/page.tsx"
 // Importáljuk a komponenst
 import ChatComponent from "@/components/aichat/chat-component"
 

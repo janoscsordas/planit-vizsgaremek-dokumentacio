@@ -33,8 +33,7 @@ Az alkalmazás a [Drizzle ORM](https://orm.drizzle.team/)-et használja az adatb
 
 Itt a sémákkal együtt exportáljuk a **db** objektumot, amelyet lekérdezéseknél használunk.
 
-```typescript
-// database/index.ts
+```typescript filename="database/index.ts"
 import { sql } from "@vercel/postgres"
 import { drizzle } from "drizzle-orm/vercel-postgres"
 import * as projectsSchema from "@/database/schema/projects"
@@ -52,7 +51,7 @@ export const db = drizzle(sql, {
 
 ## Környezeti Változók
 
-```env
+```env filename=".env.local"
 POSTGRES_URL=""
 POSTGRES_PRISMA_URL=""
 POSTGRES_URL_NO_SSL=""
@@ -67,8 +66,7 @@ POSTGRES_DATABASE=""
 
 ### Migrációs Konfiguráció
 
-```typescript
-// drizzle.config.ts
+```typescript filename="drizzle.config.ts"
 import { defineConfig } from "drizzle-kit"
 
 import { config } from "dotenv"
