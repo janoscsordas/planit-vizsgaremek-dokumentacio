@@ -3,6 +3,7 @@ const meta = {
   framework: "",
   database: "",
   packages: "",
+  authentication: "",
   supabase: "",
   drizzle: "",
   files: "",

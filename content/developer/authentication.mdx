@@ -1,0 +1,345 @@
+---
+sidebarTitle: Authentikáció
+title: Authentikáció
+---
+
+import { Steps, Callout } from "nextra/components"
+
+# Authentikáció
+
+## Áttekintés
+
+Az alkalmazás authentikációja az [Auth.js v5 (beta)](https://authjs.dev/) könyvtárat használja. Az **Auth.js** egy rugalmas, biztonságos authentikációs megoldást biztosít különböző bejelentkezési módszerek támogatásával.
+
+## Telepítés
+
+```sh
+npm install next-auth@beta
+```
+
+## Konfiguráció
+
+<Steps>
+### Környezeti változók konfigurálása
+
+A `.env.local` fájlban az alábbi változókat állítjuk be:
+
+_**Mivel az alkalmazásunkban OAuth alapú bejelentkezés is lehetséges, ezért a Google és GitHub környezeti változókat is be kell állítani.**_
+
+```env filename=".env.local"
+AUTH_GOOGLE_ID=""
+AUTH_GOOGLE_SECRET=""
+
+AUTH_GITHUB_ID=""
+AUTH_GITHUB_SECRET=""
+
+AUTH_SECRET=""
+NEXT_PUBLIC_APP_URL="<development-ben: http://localhost:3000>"
+```
+
+### Auth.js inicializálása
+
+Az `app/api/auth/[...nextauth]/route.ts` fájlban meg kell adni az auth.js-nek az útvonalait
+
+```typescript filename="route.ts"
+import { handlers } from "@/auth"
+
+export const { GET, POST } = handlers
+```
+
+### Auth.js konfiguráció létrehozása
+
+Az `auth.ts` fájlban:
+
+<Callout type="info">
+    Az alábbi már az elkészült `auth.ts` konfiguráció. Az API route ezt a konfigurációt használja.
+</Callout>
+
+```typescript filename="auth.ts"
+import { DrizzleAdapter } from "@auth/drizzle-adapter"
+import NextAuth, { NextAuthConfig, User } from "next-auth"
+import { encode as defaultEncode } from "next-auth/jwt"
+import { db } from "./database/index"
+import GitHub from "next-auth/providers/github"
+import Google from "next-auth/providers/google"
+import Credentials from "next-auth/providers/credentials"
+import { v4 as uuid } from "uuid"
+import { getUserFromDb } from "./actions/user.action"
+import { eq } from "drizzle-orm"
+import { AccountsTable, UsersTable } from "@/database/schema/user"
+
+const adapter = DrizzleAdapter(db)
+
+export const authConfig = {
+  adapter,
+  providers: [
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID!,
+      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+      async profile(profile) {
+        const existingUser = await db
+          .select()
+          .from(UsersTable)
+          .where(eq(UsersTable.id, profile.id.toString()))
+          .limit(1)
+
+        // Getting back the user or undefined
+        const user = existingUser[0]
+
+        // If user exists and has an image, we use it instead of the one from GitHub
+        const imageUrl = user?.image || profile.avatar_url
+
+        // Fix private avatar URL only if using GitHub's avatar
+        const finalImageUrl =
+          !user?.image && imageUrl.startsWith("https://private-avatars")
+            ? imageUrl.replace("private-", "")
+            : imageUrl
+
+        return {
+          id: profile.id.toString(),
+          name: profile.name,
+          email: profile.email,
+          image: finalImageUrl,
+        } as User
+      },
+    }),
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+      async profile(profile) {
+        const existingUser = await db
+          .select()
+          .from(UsersTable)
+          .where(eq(UsersTable.id, profile.sub)) // Google uses 'sub' as the ID
+          .limit(1)
+
+        // Getting back the user or undefined
+        const user = existingUser[0]
+
+        // If user exists and has an image, we use it instead of the one from Google
+        const imageUrl = user?.image || profile.picture
+
+        return {
+          id: profile.sub,
+          name: profile.name,
+          email: profile.email,
+          image: imageUrl,
+        } as User
+      },
+    }),
+    Credentials({
+      async authorize(credentials) {
+        const { email, password } = credentials
+
+        if (!email || !password) {
+          throw new Error("Email vagy jelszó nem található!")
+        }
+
+        const response = await getUserFromDb(
+          email as string,
+          password as string
+        )
+        if (response.success) {
+          return response.data as User
+        }
+
+        return null
+      },
+    }),
+  ],
+  callbacks: {
+    async jwt({ token, user, account }) {
+      if (account?.provider === "credentials") {
+        token.credentials = true
+      }
+
+      return token
+    },
+    async signIn({ user, account }) {
+      try {
+        if (user.email) {
+          const existingUser = await db
+            .select()
+            .from(UsersTable)
+            .where(eq(UsersTable.email, user.email))
+            .limit(1)
+            .then((rows) => rows[0])
+
+          if (existingUser) {
+            const existingAccount = await db
+              .select()
+              .from(AccountsTable)
+              .where(eq(AccountsTable.userId, existingUser.id))
+              .limit(1)
+              .then((rows) => rows[0])
+
+            if (
+              existingAccount &&
+              existingAccount.provider !== account?.provider
+            ) {
+              return `/login?errorMessage=${encodeURIComponent(
+                `Már van felhasználói fiókod a következővel: "${existingAccount.provider.toUpperCase()}". Jelentkezz be azzal a folytatáshoz!`
+              )}`
+            }
+          }
+        }
+        return true
+      } catch (error) {
+        return `/login?errorMessage=${encodeURIComponent(
+          "Hiba történt az autentikáció során! Kérjük próbáld újra."
+        )}`
+      }
+    },
+  },
+  jwt: {
+    encode: async function (params) {
+      if (params.token?.credentials) {
+        const sessionToken = uuid()
+
+        if (!params.token.sub) {
+          throw new Error("Nem található a felhasználó azonosítója!")
+        }
+
+        const createdSession = await adapter?.createSession?.({
+          sessionToken,
+          userId: params.token.sub,
+          expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days token expiration
+        })
+
+        if (!createdSession) {
+          throw new Error("Nem sikerült létrehozni a sessiont!")
+        }
+
+        return sessionToken
+      }
+
+      return defaultEncode(params)
+    },
+  },
+  secret: process.env.AUTH_SECRET as string,
+  pages: {
+    signIn: "/login",
+  },
+  trustHost: true,
+} satisfies NextAuthConfig
+
+export const { auth, signIn, signOut, handlers } = NextAuth(authConfig)
+```
+
+</Steps>
+
+## Middleware Konfiguráció
+
+A `Middleware.ts` fájlban:
+
+Az exportált config a (fájl alján) felel, a megadott útvonalak levédéséért. Amikor a felhasználó egy olyan útvonalra lép, amely a config-ban megvan adva, akkor a middleware function oldal töltés előtt lefutásra kerül. **Így IS** védjük a megadott útvonalakat.
+
+```typescript filename="middleware.ts"
+import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+import { db } from "@/database/"
+import { ProjectsTable, ProjectMembersTable } from "@/database/schema/projects"
+import { eq, and } from "drizzle-orm"
+import { auth } from "@/auth"
+
+// Middleware for checking if user has access to specific project
+export async function middleware(req: NextRequest) {
+  const session = await auth()
+
+  if (!session || !session.user) {
+    return NextResponse.redirect(new URL("/login", req.url))
+  }
+
+  // Check if route is a project page
+  const projectId = req.nextUrl.pathname.split("/")[2]
+
+  // Check if no projectId is provided or specific path were provided that is not a projectId
+  // Something like: "create". Change this if we add new paths that are not project pages
+  if (!projectId || projectId === "create") {
+    return NextResponse.next()
+  }
+
+  if (projectId) {
+    const [projectAccess] = await db
+      .select({
+        isOwner: eq(ProjectsTable.userId, session.user.id as string),
+        isMember: ProjectMembersTable.id,
+      })
+      .from(ProjectsTable)
+      .leftJoin(
+        ProjectMembersTable,
+        and(
+          eq(ProjectMembersTable.projectId, projectId),
+          eq(ProjectMembersTable.userId, session.user.id as string)
+        )
+      )
+      .where(eq(ProjectsTable.id, projectId))
+      .limit(1)
+
+    if (!projectAccess?.isOwner && !projectAccess?.isMember) {
+      return NextResponse.redirect(new URL("/projects", req.url))
+    }
+  }
+
+  return NextResponse.next()
+}
+
+export const config = {
+  matcher: "/projects/:path*",
+}
+```
+
+## Session Kezelés
+
+Még egy módszer az útvonalak, illetve a szerveroldali műveletek védelmére. Mindenhol használjuk a session alapú **authorization**-t, hogy teljes védelmet biztosítsunk az érzékeny adatok és műveletek számára.
+
+### Session adatok lekérése szerveroldalon
+
+Az alábbi egy példa kód az adatok lekérésére
+
+```typescript filename="page.tsx" {1, 5-9, 14}
+import { auth } from "@/auth"
+import { redirect } from "next/navigation"
+
+export default async function Page() {
+    const session = await auth()
+
+    if (!session?.user) {
+        return redirect('/login')
+    }
+
+    // Session adatok használata
+    return (
+        <div>
+            Hello {session.user.name}!
+        </div>
+    )
+}
+```
+
+### Session adatok lekérése kliensoldalon
+
+Az alábbi egy példa kód az adatok lekérésére kliensoldalon
+
+```typescript filename="profile-component.tsx" {3, 6, 8-10, 12}
+'use client'
+
+import { useSession } from "next-auth/react"
+
+export function ProfileComponent() {
+    const { data: session } = useSession()
+
+    if (!session) {
+        return <div>Nincs bejelentkezve</div>
+    }
+
+    return <div>Üdvözöljük, {session.user.name}!</div>
+}
+```
+
+## Hibaelhárítás
+
+Gyakori hibák és megoldások:
+
+1. **Környezeti változók:** Mindig ellenőrizzük le, hogy minden szükséges változó be van állítva.
+2. **Provider hibák:** Ellenőrizzük a provider-specifikus beállításokat és callback URL-eket.
