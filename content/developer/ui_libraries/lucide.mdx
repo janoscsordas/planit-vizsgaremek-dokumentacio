@@ -4,3 +4,71 @@ title: Lucide React Ikonok
 ---
 
 # Lucide React Ikonok
+
+## Áttekintés
+
+Az alkalmazásban a Lucide React könyvtárat használjuk ikonok megjelenítésére. Ez egy modern, nyílt forráskódú ikon készlet, amely könnyen testreszabható és jól integrálható React alapú alkalmazásokba.
+
+## Telepítés
+
+```sh
+npm install lucide-react
+```
+
+## Példa Komponens
+
+Külön stílusokat is adhatunk. A width és height beépített, a className-be a saját stílusainkat adhatjuk meg az ikonnak.
+
+```typescript {21} filename="notification-bell.tsx"
+import { Button } from "@/components/ui/button"
+import { useNotifications } from "@/hooks/useNotifications"
+import { Bell } from "lucide-react"
+import Link from "next/link"
+
+export default function NotificationBell() {
+    const { notifications } = useNotifications()
+
+    return (
+        <Link
+        href="/notifications"
+        className="flex items-center justify-center"
+        aria-label="Értesítések"
+        >
+            <Button
+                variant="outline"
+                size="icon"
+                className="relative cursor-pointer group hover:bg-emerald/15"
+                aria-label="Értesítések"
+            >
+                <Bell width="20" height="20" className="text-muted-foreground" />
+                {notifications.length > 0 && (
+                <p className="absolute top-0 right-0 w-4 h-4 text-xs text-white transform translate-x-1/2 -translate-y-1/2 bg-red-500 rounded-full">
+                    {notifications.length > 9 ? "9+" : notifications.length}
+                </p>
+                )}
+            </Button>
+        </Link>
+    )
+}
+```
+
+## Teljesítmény Optimalizálás
+
+### Ajánlott Gyakorlatok
+
+1. Csak a használt ikonok importálása:
+
+```typescript
+import { User, Settings } from 'lucide-react';
+```
+
+### Hozzáférhetőség
+
+ARIA attribútumok
+
+```typescript
+<User 
+    aria-label="Felhasználói profil"
+    role="img"
+/>
+```

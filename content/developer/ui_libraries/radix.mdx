@@ -4,3 +4,39 @@ title: Radix UI
 ---
 
 # Radix UI
+
+## Áttekintés
+
+A [Radix UI](https://www.radix-ui.com/) egy primitív UI Könyvtár, amelyből csak egy pár komponenst használtunk fel. Ez a könyvtár biztosítja az alapvető interaktív elemek hozzáférhetőségét és használhatóságát.
+
+**(A shadcn/ui a Radix UI-ra épül.)**
+
+## UI Könyvtár Telepítése
+
+```sh
+npm install @radix-ui/themes
+```
+
+## Használt Komponensek
+
+```typescript
+// layout.tsx -> Root Layout-ban használt Theme Provider komponens
+import { Theme } from "@radix-ui/themes";
+
+import { 
+    Badge, 
+    Avatar, 
+    DropdownMenu, 
+    Spinner, 
+    TextField 
+} from "@radix-ui/themes";
+```
+
+## Hozzáférhetőség
+
+A Radix UI komponensek beépített hozzáférhetőségi funkciókat tartalmaznak.
+
+- Automatikus ARIA attribútumok
+- Billentyűzet navigáció támogatása
+- Screen Reader (Képernyőolvasó) kompatibilitás
+- Fókusz kezelés
