@@ -4,6 +4,7 @@ const meta = {
   database: "",
   packages: "",
   authentication: "",
+  email: "",
   supabase: "",
   drizzle: "",
   files: "",

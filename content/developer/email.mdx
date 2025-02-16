@@ -1,0 +1,244 @@
+---
+sidebarTitle: E-mailes hitelesítés
+title: E-mailes hitelesítés
+---
+
+## E-mailes hitelesítés
+
+A projektben `Resendet` használunk az email kommunikáció kezelésére, mivel ez egy modern és megbízható megoldást kínál a tranzakciós és marketing emailek küldésére. A Resend mellett szóló főbb érvek:
+
+- **Egyszerű integráció**: Next.js környezetben különösen könnyen implementálható, TypeScript támogatással.
+- **Megbízható kézbesítés**: Magas kézbesítési arány és fejlett spam védelem biztosítja az emailek célba érését.
+- **Modern dizájn lehetőségek**: HTML sablonok és React komponensek használatával könnyen készíthetünk reszponzív, vonzó email dizájnokat.
+- **Fejlesztői élmény**: Részletes hibakezelés és logging teszi egyszerűvé a fejlesztést és hibakeresést.
+- **Költséghatékonyság**: Az ingyenes tier (10,000 email/hó) megfelelő a legtöbb kezdeti igényre.
+
+## Telepítés
+
+Először telepítsd a Resend csomagot:
+
+```bash
+bun add resend
+```
+
+## Konfiguráció
+
+1. Hozz létre egy `.env.local` fájlt és add hozzá a Resend API kulcsodat:
+
+```env
+RESEND_API_KEY=re_123456789
+```
+
+2. Hozz létre egy új API route-ot a `pages/api/email.ts` vagy `app/api/email/route.ts` alatt:
+
+```typescript
+import { Resend } from "resend"
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+export async function POST(req: Request) {
+  try {
+    const { to, subject, html } = await req.json()
+
+    const data = await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: to,
+      subject: subject,
+      html: html,
+    })
+
+    return Response.json(data)
+  } catch (error) {
+    return Response.json({ error })
+  }
+}
+```
+
+Email szerver indítása:
+
+```bash
+bun run email
+```
+
+## Használat példa
+
+```typescript
+"use server"
+
+import { Resend } from "resend"
+import VerificationEmail from "@/lib/emails/email-succesful"
+
+export async function sendVerificationEmail(
+  email: string,
+  name: string,
+  verificationLink: string
+) {
+  // Initialize Resend client
+  const resend = new Resend(process.env.RESEND_API_KEY)
+
+  await resend.emails.send({
+    from: "no-reply@planitapp.hu",
+    to: email,
+    subject: "Planitapp - Sikeres regisztráció",
+    react: VerificationEmail({
+      name: name,
+      verificationLink: verificationLink,
+    }),
+  })
+}
+```
+
+## Email template példa
+
+Példa regisztrációs visszaigazoló email template-re, amit az alkalmazás is használ:
+
+```typescript
+import {
+  Button,
+  Container,
+  Head,
+  Heading,
+  Html,
+  Link,
+  Tailwind,
+  Text,
+} from "@react-email/components"
+import * as React from "react"
+
+const styles = {
+  button: {
+    backgroundColor: "#45CB85",
+    borderRadius: "8px",
+    boxShadow: "0 4px 6px rgba(69, 203, 133, 0.2)",
+    color: "#ffffff",
+    fontWeight: "600",
+    padding: "16px 32px",
+  },
+  title: {
+    color: "#45CB85",
+    fontWeight: "700",
+    margin: "0 0 30px",
+  },
+  body: {
+    color: "#666",
+    lineHeight: "1.6",
+    marginTop: "24px",
+  },
+  footer: {
+    borderTop: "1px solid #eee",
+    marginTop: "40px",
+    paddingTop: "20px",
+  },
+  link: {
+    color: "#45CB85",
+    fontWeight: "600",
+  },
+}
+
+type EmailProps = {
+  name: string | null
+  verificationLink: string
+}
+
+const VerificationEmail = ({ name, verificationLink }: EmailProps) => {
+  const formattedDate = new Date().toLocaleString("hu-HU")
+
+  return (
+    <Tailwind>
+      <Html>
+        <Head>
+          <title>Planitapp - Sikeres regisztráció</title>
+        </Head>
+        <Container className="max-w-[600px] py-8 font-sans">
+          <Container className="text-center">
+            <Heading style={styles.title} className="sm:text-5xl">
+              Sikeres regisztráció!
+            </Heading>
+            <Heading className="mb-3 text-xl sm:text-3xl">
+              Kedves {name}!
+            </Heading>
+            <Button href={verificationLink} style={styles.button}>
+              Tovább a hitelesítéshez
+            </Button>
+            <Text style={styles.body}>
+              Ha a gomb nem működik:{" "}
+              <Link style={styles.link} href={verificationLink}>
+                {verificationLink}
+              </Link>
+            </Text>
+            <Text style={styles.body}>
+              Kérdés esetén:{" "}
+              <Link style={styles.link} href="mailto:support@planitapp.hu">
+                support@planitapp.hu
+              </Link>
+            </Text>
+            <Container style={styles.footer}>
+              <Text className="text-sm text-gray-500">
+                Üdvözlettel, a Planitapp csapata!
+              </Text>
+              <Text className="text-xs text-gray-400">{formattedDate}</Text>
+            </Container>
+          </Container>
+        </Container>
+      </Html>
+    </Tailwind>
+  )
+}
+
+export default VerificationEmail
+```
+
+## Sikeres e-mail hitelesítés
+
+```typescript
+import { verifyEmail } from "@/actions/user.action"
+import { notFound, redirect } from "next/navigation"
+
+interface Props {
+  params: Promise<{ token: string }>
+}
+
+export default async function VerifyEmailPage({ params }: Props) {
+  const { token } = await params
+
+  if (!token) {
+    return notFound()
+  }
+
+  const result = await verifyEmail(token)
+
+  if (result.success) {
+    redirect(
+      `/login?message=${encodeURIComponent("Email cím sikeresen megerősítve!")}`
+    )
+  } else {
+    redirect(
+      `/login?errorMessage=${encodeURIComponent(
+        "Email cím megerősítése sikertelen!"
+      )}`
+    )
+  }
+}
+```
+
+## Főbb funkciók
+
+- HTML és szöveges emailek küldése
+- Sablon használata
+- Csatolmányok kezelése
+- Tömeges email küldés
+- Email események követése
+
+## Biztonsági megfontolások
+
+- Az API kulcsot mindig környezeti változóként tárold
+- Validáld a bemeneti adatokat
+- Használj rate limiting-et
+- Implementálj CSRF védelmet
+
+## Hasznos tippek
+
+1. Használj email sablonokat a konzisztens megjelenésért
+2. Implementálj hibakezelést és újrapróbálkozást
+3. Teszteld az email küldést fejlesztői környezetben
+4. Figyelj az email küldési limitekre
