@@ -19,7 +19,7 @@ bun add zod
 
 ### Új Projekt Létrehozása
 
-```typescript
+```typescript filename="projectsSchema.ts"
 import { z } from "zod"
 
 export const createProjectSchema = z.object({
@@ -36,7 +36,7 @@ export const createProjectSchema = z.object({
 
 ### Projekt Frissítése
 
-```typescript
+```typescript filename="projectsSchema.ts"
 export const updateProjectSchema = z.object({
   userId: z.string().min(4),
   name: z
@@ -55,7 +55,7 @@ export const updateProjectSchema = z.object({
 
 ### Projekt Név Módosítása
 
-```typescript
+```typescript filename="projectsSchema.ts"
 export const projectChangeFormSchema = z.object({
   name: z
     .string()
@@ -70,7 +70,7 @@ export const projectChangeFormSchema = z.object({
 
 ### Feladat Validációs Séma
 
-```typescript
+```typescript filename="projectsSchema.ts"
 export const projectTaskCreationSchema = z.object({
   taskName: z
     .string({
@@ -109,7 +109,7 @@ export const projectTaskCreationSchema = z.object({
 
 ### Új Projekt Létrehozása
 
-```typescript
+```typescript filename="projects.action.ts"
 async function createProject(formData: FormData) {
   const validatedData = createProjectSchema.safeParse({
     name: formData.get("name"),
@@ -129,7 +129,7 @@ async function createProject(formData: FormData) {
 
 ### Új Feladat Létrehozása
 
-```typescript
+```typescript filename="projectTask.action.ts"
 async function createTask(formData: FormData) {
   const validatedData = projectTaskCreationSchema.safeParse({
     taskName: formData.get("taskName"),
@@ -156,7 +156,7 @@ async function createTask(formData: FormData) {
 
 ### Validációs Séma
 
-```typescript
+```typescript filename="userSchema.ts"
 export const loginSchema = z.object({
   email: z
     .string()
@@ -174,8 +174,7 @@ export const loginSchema = z.object({
 
 ### Hibakezelés megvalósítása a bejelentkezésnél
 
-```typescript {31-49}
-// user.actions.ts
+```typescript {31-49} filename="user.actions.ts"
 export async function login({
   email,
   password,

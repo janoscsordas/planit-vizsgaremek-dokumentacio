@@ -15,8 +15,7 @@ A projektben a [Supabase](https://supabase.com/)-t használjuk real-time adatbá
 
 A Supabase kliens inicializálása a következőképpen történik:
 
-```typescript
-// supabase.ts
+```typescript filename="supabase.ts"
 import { createClient } from "@supabase/supabase-js"
 
 export const supabase = createClient(
@@ -40,7 +39,7 @@ Az adatbázis részletes leírása megtalálható: [itt](/docs/developer/databas
 
 Az alábbi példa bemutatja, hogyan implementálhatjuk a messages tábla real-time kezelését egy React komponensben:
 
-```typescript
+```typescript filename="hooks/useMessages.tsx"
 interface Message {
   id: string
   project_id: string
