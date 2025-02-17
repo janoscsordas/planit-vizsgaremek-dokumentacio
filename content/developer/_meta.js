@@ -9,6 +9,7 @@ const meta = {
   drizzle: "",
   files: "",
   zod: "",
+  kanban: "",
   planieai: "",
   ui_libraries: {
     title: "UI Könyvárak",

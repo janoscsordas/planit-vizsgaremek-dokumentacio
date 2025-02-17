@@ -5,19 +5,19 @@ title: E-mailes hitelesítés
 
 ## E-mailes hitelesítés
 
-A projektben `Resendet` használunk az email kommunikáció kezelésére, mivel ez egy modern és megbízható megoldást kínál a tranzakciós és marketing emailek küldésére. A Resend mellett szóló főbb érvek:
+A projektben `Resend`-et használunk az email kommunikáció kezelésére, mivel ez egy modern és megbízható megoldást kínál a tranzakciós és marketing emailek küldésére. A Resend mellett szóló főbb érvek:
 
 - **Egyszerű integráció**: Next.js környezetben különösen könnyen implementálható, TypeScript támogatással.
 - **Megbízható kézbesítés**: Magas kézbesítési arány és fejlett spam védelem biztosítja az emailek célba érését.
 - **Modern dizájn lehetőségek**: HTML sablonok és React komponensek használatával könnyen készíthetünk reszponzív, vonzó email dizájnokat.
 - **Fejlesztői élmény**: Részletes hibakezelés és logging teszi egyszerűvé a fejlesztést és hibakeresést.
-- **Költséghatékonyság**: Az ingyenes tier (10,000 email/hó) megfelelő a legtöbb kezdeti igényre.
+- **Költséghatékonyság**: Az ingyenes tier (1,000 email/hó) megfelelő a legtöbb kezdeti igényre.
 
 ## Telepítés
 
 Először telepítsd a Resend csomagot:
 
-```bash
+```sh
 bun add resend
 ```
 
@@ -29,28 +29,31 @@ bun add resend
 RESEND_API_KEY=re_123456789
 ```
 
-2. Hozz létre egy új API route-ot a `pages/api/email.ts` vagy `app/api/email/route.ts` alatt:
+2. Hozz létre egy új API route-ot a `actions/email.actions.ts` alatt:
 
 ```typescript
+"use server"
+
 import { Resend } from "resend"
+import VerificationEmail from "@/lib/emails/email-succesful"
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+export async function sendVerificationEmail(
+  email: string,
+  name: string,
+  verificationLink: string
+) {
+  // Initialize Resend client
+  const resend = new Resend(process.env.RESEND_API_KEY)
 
-export async function POST(req: Request) {
-  try {
-    const { to, subject, html } = await req.json()
-
-    const data = await resend.emails.send({
-      from: "onboarding@resend.dev",
-      to: to,
-      subject: subject,
-      html: html,
-    })
-
-    return Response.json(data)
-  } catch (error) {
-    return Response.json({ error })
-  }
+  await resend.emails.send({
+    from: "no-reply@planitapp.hu",
+    to: email,
+    subject: "Planitapp - Sikeres regisztráció",
+    react: VerificationEmail({
+      name: name,
+      verificationLink: verificationLink,
+    }),
+  })
 }
 ```
 

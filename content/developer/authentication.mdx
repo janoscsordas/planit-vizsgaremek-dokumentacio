@@ -1,11 +1,11 @@
 ---
-sidebarTitle: Authentikáció
-title: Authentikáció
+sidebarTitle: Autentikáció
+title: Autentikáció
 ---
 
 import { Steps, Callout } from "nextra/components"
 
-# Authentikáció
+# Autentikáció
 
 ## Áttekintés
 
@@ -14,7 +14,7 @@ Az alkalmazás authentikációja az [Auth.js v5 (beta)](https://authjs.dev/) kö
 ## Telepítés
 
 ```sh
-npm install next-auth@beta
+bun add next-auth@beta
 ```
 
 ## Konfiguráció
@@ -52,7 +52,8 @@ export const { GET, POST } = handlers
 Az `auth.ts` fájlban:
 
 <Callout type="info">
-    Az alábbi már az elkészült `auth.ts` konfiguráció. Az API route ezt a konfigurációt használja.
+  Az alábbi már az elkészült `auth.ts` konfiguráció. Az API route ezt a
+  konfigurációt használja.
 </Callout>
 
 ```typescript filename="auth.ts"
@@ -302,18 +303,14 @@ import { auth } from "@/auth"
 import { redirect } from "next/navigation"
 
 export default async function Page() {
-    const session = await auth()
+  const session = await auth()
 
-    if (!session?.user) {
-        return redirect('/login')
-    }
+  if (!session?.user) {
+    return redirect("/login")
+  }
 
-    // Session adatok használata
-    return (
-        <div>
-            Hello {session.user.name}!
-        </div>
-    )
+  // Session adatok használata
+  return <div>Hello {session.user.name}!</div>
 }
 ```
 
@@ -322,18 +319,18 @@ export default async function Page() {
 Az alábbi egy példa kód az adatok lekérésére kliensoldalon
 
 ```typescript filename="profile-component.tsx" {3, 6, 8-10, 12}
-'use client'
+"use client"
 
 import { useSession } from "next-auth/react"
 
 export function ProfileComponent() {
-    const { data: session } = useSession()
+  const { data: session } = useSession()
 
-    if (!session) {
-        return <div>Nincs bejelentkezve</div>
-    }
+  if (!session) {
+    return <div>Nincs bejelentkezve</div>
+  }
 
-    return <div>Üdvözöljük, {session.user.name}!</div>
+  return <div>Üdvözöljük, {session.user.name}!</div>
 }
 ```
 
