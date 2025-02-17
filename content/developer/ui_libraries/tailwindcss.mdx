@@ -1,0 +1,224 @@
+---
+sidebarTitle: Tailwind CSS
+title: Tailwind CSS
+---
+
+import { Callout } from "nextra/components"
+
+# Tailwind CSS
+
+## Áttekintés
+
+Az alkalmazásban a [TailwindCSS](https://tailwindcss.com/)-t használjuk az alkalmazás stílusának kialakításához. A Tailwind egy utility-first CSS keretrendszer, amely lehetővé teszi a gyors és konzisztens felhasználói felületek építését előre definiált osztályok segítségével.
+
+_**A shadcn/ui a TailwindCSS-t alkalmazza a komponensek stílusainak kialakításában.**_
+
+## Telepítés és Konfiguráció
+
+### Függőségek
+
+A projekt a következő Tailwind-kapcsolódó függőségeket használja:
+
+<Callout type="info">
+    A fejlesztés idejében a Tailwindcss `3.4.17` verzióját használtuk. A **Next.js** keretrendszer automatikusan konfigurálja nekünk a Tailwindcss-t.
+</Callout>
+
+```sh
+bun add -D tailwindcss postcss autoprefixer
+```
+
+### Inicializálás
+
+```sh
+bunx --bun tailwindcss init -p
+```
+
+Ez létrehoz kettő darab fájlt:
+
+- `tailwind.config.ts`: A Tailwind testreszabásához
+- `postcss.config.mjs`: PostCSS konfigurációhoz
+
+### Konfiguráció az alkalmazásban
+
+A fájlban már megtalálható a teljes konfiguráció. A színeket a **shadcn/ui** állította be.
+A **withUt** az uploadthing komponensekhez tartozó utility function, amivel wrapeltük a Tailwind konfigurációt.
+
+A `tailwind.config.ts` fájl tartalma:
+
+```typescript filename="tailwind.config.ts"
+import { withUt } from "uploadthing/tw"
+import type { Config } from "tailwindcss"
+
+export default withUt({
+  darkMode: ["class"],
+  content: [
+    "./pages/**/*.{js,ts,jsx,tsx,mdx}",
+    "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/utils/**/*.{js,ts,jsx,tsx,mdx}",
+  ],
+  theme: {
+    extend: {
+      fontFamily: {
+        sans: ["var(--font-geist-sans)"],
+        mono: ["var(--font-geist-mono)"],
+      },
+      animation: {
+        "bounce-first-object": "bounce-slow 5s ease-in-out infinite",
+        "bounce-second-object": "bounce-slow 7s ease-in-out infinite",
+        "bounce-third-object": "bounce-slow 9s ease-in-out infinite",
+      },
+      keyframes: {
+        "bounce-slow": {
+          "0%, 100%": {
+            transform: "translateY(-10px)",
+          },
+          "50%": {
+            transform: "translateY(10px)",
+          },
+        },
+      },
+      colors: {
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        emerald: {
+          DEFAULT: "hsl(var(--emerald))",
+          hover: "hsl(var(--emerald-hover))",
+        },
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        chart: {
+          "1": "hsl(var(--chart-1))",
+          "2": "hsl(var(--chart-2))",
+          "3": "hsl(var(--chart-3))",
+          "4": "hsl(var(--chart-4))",
+          "5": "hsl(var(--chart-5))",
+        },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+    },
+  },
+  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+})
+```
+
+### CSS Bekötése
+
+A globális CSS fájlban (`app/globals.css`):
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+## Használat
+
+### Alapvető osztályok
+
+A Tailwind osztályok közvetlenül a JSX elemekben használhatóak:
+
+```tsx
+<div className="flex items-center justify-between p-4 bg-white shadow-md">
+  <h1 className="text-xl font-bold text-gray-800">Példa Komponens</h1>
+  <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+    Akció
+  </button>
+</div>
+```
+
+### Reszponzív tervezés
+
+A Tailwind beépített breakpointokat kínál:
+
+- `sm`: 640px
+- `md`: 768px
+- `lg`: 1024px
+- `xl`: 1280px
+- `2xl`: 1536px
+
+Példa használatra:
+
+```tsx
+<div className="w-full md:w-1/2 lg:w-1/3">
+  {/* A tartalom teljes szélességű mobilon, 
+      fél széles tableten, 
+      harmad széles asztali nézetben */}
+</div>
+```
+
+### Egyéni komponensek
+
+Gyakran használt osztálykombinációk újrafelhasználhatók a `@apply` direktívával:
+
+```css
+.custom-button {
+    @apply px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors;
+}
+```
+
+### Sötét mód
+
+A sötét mód támogatás beépített a Tailwindbe:
+
+```tsx
+<div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white">
+    { /* A tartalom automatikusan alkalmazkodik a sötét módhoz */ }
+</div>
+```
+
+## JIT (Just-In-Time) Mód
+
+A Tailwind alapértelmezetten JIT módban fut, ami:
+
+- Gyorsabb fejlesztési folyamatot biztosít
+- Csak a használt osztályokat generálja le
+- Támogatja az arbitrary values használatát **(pl.: text-[#52351a])**
+
+## Hasznos eszközök
+
+- Tailwind CSS Intellisense Visual Studio Code kiterjesztés
+- Tailwind CSS dokumentáció

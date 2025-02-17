@@ -1,4 +1,5 @@
 const meta = {
+    tailwindcss: "",
     shadcn: "",
     radix: "",
     lucide: "",
