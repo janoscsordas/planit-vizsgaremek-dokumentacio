@@ -2,19 +2,37 @@
 
 Az alkalmazásunk a https://planitapp.hu URL-en keresztül érhető el webböngészőből. 
 
-A főoldalra lépve egy rövid leírás figyelhető meg az alkalmazásról, ezentúl referencia fotókkal lehet találozni, amelyek bemutatják a lényegesebb részeit a programnak, illetve a legfontosabb funckiók rövid ismertetője látható, majd lejjebb görgetve az árak ismertetése.
+A főoldalra lépve egy rövid leírás figyelhető meg az alkalmazásról, ezentúl referencia fotókkal lehet találozni, amelyek megmutatják a lényegesebb részeit a programnak, illetve a legfontosabb funckiók rövid ismertetője látható, majd lejjebb görgetve az árak ismertetése.
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/mainPage.png" />
 
 ### Regisztráció és Bejelentkezés
 
-A "BELÉPÉS" vagy a "VÁGJ BELE!" nyomógombokra kattintva az autentikáció rész nyílik meg, ahol a felhasználónak először készítenie kell egy saját fiókot, hiszen az alkalmazás további részei regisztrációhoz kötöttek. A regisztrációnál figyelmesen kell kitölteni a beviteli mezőket, hiteles e-mail címet kell megadni, amire hitelesítő e-mailt fogunk küldeni, amit el kell fogadnia a felhasználónak, ezen keresztül tudjuk ellenőrizni hogy az e-mail cím valódi e. A jelszó megadásánál fontos, hogy a felsorolt követelményeknek megfeleljen, tehát legalább 8 karakternek kell lennie, tartalmazni kell számot, nagybetűt, valamilyen speciális karaktert is. 
+A "BELÉPÉS" vagy a "VÁGJ BELE!" nyomógombokra kattintva az autentikáció rész nyílik meg, ahol a felhasználónak először készítenie kell egy saját fiókot, hiszen az alkalmazás további részei regisztrációhoz kötöttek. 
+
+A regisztrációnál figyelmesen kell kitölteni a beviteli mezőket, hiteles e-mail címet kell megadni, amire automatikusan hitelesítő e-mailt fog küldeni a program, amit el kell fogadnia a felhasználónak, ezen keresztül tudjuk ellenőrizni hogy az e-mail cím valódi e. 
+
+A jelszó megadásánál fontos, hogy a felsorolt követelményeknek megfeleljen, 
+- tehát legalább 8 karakternek kell lennie 
+- tartalmaznia kell 1 számot
+- 1 nagybetűt
+- és 1 speciális karaktert is.
+
+<img className="w-[32rem] mt-8 mx-auto rounded" src="/images/signup.png" />
+
+A logóra kattintva a felhasználó visszatérhet a főoldalra.
 
 Ha a felhasználó nem kíván létre hozni fiókot, akkor lehetőség van arra, hogy meglévő Google vagy Github fiókjával jelentkezzen be, ilyenkor természetesen nem kérünk be semmilyen felhasználói adatot.
 
-Regisztráció után bejelentkezés szükséges az e-mail elfogadása után.
+Regisztráció után bejelentkezés szükséges az e-mail elfogadása után. Itt meg kell adnunk a regisztrált email címet és jelszavat, ha nem regisztáltunk saját fiókot akkor a hozzácsatolt Google vagy Github fiókkal lehet továbbjutni. 
+
+<img className="w-[32rem] mt-8 mx-auto rounded" src="/images/login.png" />
 
 ### Projektek oldal
 
 Sikeres bejelentkezés után a "projektek" oldalra navigálódik át a felhasználó. Itt lehetőség van arra, az AI asszisztenssel, Planie AI-al beszélgessünk, illetve itt lehet új projektet létehozni, meglévő saját vagy meghívott projektbe belépni. Lehet a projektek között keresni, és szűrni is őket.
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/projects.png" />
 
 ### Áttenkintés
 
@@ -22,32 +40,67 @@ Az áttekintés oldalon részletes elemzéseket lehet megtekinteni a projektről
 
 Ezentúl a legutóbbi tevékenységeket lehet nyomon követni, pontosabban, hogy a tagok közül ki milyen feladatot hozott létre és mikor.
 
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/overview.png" />
+
 ### Feladatok
 
-Ez a rész a lelke az alkalmazásnak, ugyanis itt van lehetőség a feladatokat felügyelni. Nyílván egy új projektben még nincsenek feladatok, ezeket a felhasználóknak kell létrehozniuk a "+" gombra kattintva. Ezután megnyílik egy párbeszéd ablak, ahol a feladatot létre lehet hozni. Minden feladatnak kell adni egy címet, egy rövid lényegre törő leírást, be kell állítani a prioritását, ami lehet alacsony, közepes vagy magas, illetve a státuszát.
+Ez a rész a lelke az alkalmazásnak, ugyanis itt van lehetőség a feladatokat felügyelni. Nyilván egy új projektben még nincsenek feladatok, ezeket a felhasználóknak kell létrehozniuk a "+" gombra kattintva. Ezután megnyílik egy párbeszéd ablak, ahol a feladatot létre lehet hozni. Minden feladatnak kell adni egy címet, egy rövid lényegre törő leírást, be kell állítani a prioritását, ami lehet alacsony, közepes vagy magas, illetve a státuszát.
 
 A létrehozás után a projekt minden tagja meg tudja tekinteni a feladatot, kiosztani a többi tagnak, tudja szerkeszteni, módosítani a státuszát, kanban nézet esetén egyszerűen áthúzni másik táblára vagy akár törölni, amiről visszajelzést kap a felhasználó. Kettő féle nézet van, a lista nézet és az előbb említett kanban nézet. 
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/tasks.png" />
 
 ### Csevegő Felület 
 
 Itt a projekt tagjai tudnak egymással kommunikálni írásos formában teljes mértékben valós időben. Lehetőség adódik az elküldött üzenet szerkesztésére vagy akár törlésére is. Az üzenetként vagy akár üzenet mellé küldhetők hangulatjelek is, a felhasználói élmény fokozása érdekében.
 
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/chat.png" />
+
 ### Problémák 
 
 Ha van bármi észrevételünk vagy szeretnénk segítséget kérni a projekt tagjaitól akkor azt a Problémák oldal egy új probléma létrehozásával tudatni lehet a projekt többi tagjával. A probléma létrehozásánál meg lehet adni a címet egy hosszabb leírást, hogy pontosan mit is szeretnénk, ha egy feladattal van valami akkor hozzá lehet kapcsolni az adott feladathoz, hozzá lehet még adni címkét, amelyek által pontosabban meg tudjuk határozni szándékunkat.
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/issues.png" />
 
 ### Tagok 
 
 A tagok szekcióban lehet új tagnak meghívót küldeni e-mail cím alapján, amit kizárólag a tulajdonos és az admin tud megcsinálni, ezt a meghívást az értesítésekben el lehet fogadni vagy ha a felhasználó nem kívánkozik csatalkozni, akkor el is tudja utasítani azt. Tagot eltávolítani csakis a tulajdonosnak van joga. Ezenkívül megtalálható itt a tagok teljes listája a tagok nevével, e-mail címjükkel, csatlakozási dátummal és a titulusukkal. A tag nevére kattintva megtekinthető a profilja, ahol ott van a neve, a születési dátuma, ha megadta, a csatlakozás ideje és az e-mail címe.
 
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/members.png" />
+
 ### Beállítások
 
 A beállítások menüponton belül a saját projektről lehet információkat megtekinteni, a projekt nevét megváltoztatni, státuszát módosítani vagy törölni véglegesen a projektet.
 
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/settings.png" />
+
 ### Fiókbeállítások
 
-Ezen a felületen lehet szerkeszteni a felhasználói profilt, felhasználóvenet módosítani, születési dátumot beállítani, profil képet feltölteni vagy akár törölni a profilt.
+Ezen a felületen lehet szerkeszteni a felhasználói profilt, 
+- felhasználóvenet módosítani (ezt 90 naponta lehet)
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/change_name.png" />
+
+- születési dátumot beállítani (ezt csak egyszer lehet beállítani és módosításra nincs lehetőség)
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/birthdate.png" />
+
+- profilképet feltölteni
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/profile_picture.png" />
+
+- jelszavat módosítani 
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/change_password.png" />
+
+- vagy akár véglegesen törölni a profilt.
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/delete.png" />
 
 A megjelenítés fülön belül személyre szabhatjuk az alkalmazás témáját, lehet ez világos, sötét, vagy akár kiválaszthatjuk, hogy a rendszerünk alapértelmezett témája legyen beállítva.
 
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/theme.png" />
+
 Az értesítések részben lehet kezelni a bejövő projekt meghívásokat.
+
+<img className="w-[48rem] mt-8 mx-auto rounded" src="/images/notifications.png" />
