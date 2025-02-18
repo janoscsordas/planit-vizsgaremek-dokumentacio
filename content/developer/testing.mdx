@@ -1,0 +1,241 @@
+---
+sidebarTitle: Tesztelés
+title: Tesztelés
+---
+
+# Vitest és React Testing Library
+
+## Áttekintés
+
+Az alkalmazásban a [Vitest](https://vitest.dev/) tesztelő könyvtárat használjuk. A **Vitest** egy modern **JavaScript/TypeScript** tesztelési keretrendszer, amely különösen jól illeszkedik a **Vite** alapú projektekhez. A könyvtár **Jest-kompatibilis API**-t kínál, ami megkönnyíti az átállást más projektekről.
+
+Az alkalmazásban a [React Testing Library](https://testing-library.com/) tesztelő könyvtárat használjuk. A **React Testing Library** egy olyan tesztelő könyvtár, amely a **React komponensek tesztelésére** összpontosít a **felhasználói interakciók szimulálásával**.  A hangsúly a **felhasználó szemszögéből történő tesztelésen** van, nem pedig a komponens **belső megvalósításán**. Ezáltal a tesztek kevésbé törékenyek lesznek, és jobban tükrözik a **valós felhasználói viselkedést**.
+
+## Telepítés
+
+```sh
+# Vitest
+bun add -D vitest
+
+# React Testing Library
+bun add @testing-library/jest-dom"
+```
+
+## Alap Struktúra
+
+### Importálás és Alapvető Eszközök
+
+Importok: A tesztkód importálja a szükséges Vitest függvényeket (describe, it, expect, beforeAll, afterAll, vi), valamint a tesztelendő függvényeket (decryptMessage, encryptMessage) és a crypto modult.
+
+```typescript
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+```
+
+Az alkalmazásban használt **Vitest** építőelemek:
+
+- **describe**: Tesztcsoportok létrehozására szolgál, amelyek logikailag összetartozó teszteket foglalnak magukba.
+- **it**: Egyedi tesztesetek definiálására szolgál. Minden it blokk egy konkrét tesztet reprezentál.
+- **expect**: Assertion-ök (állítások) végrehajtására szolgál. Az expect segítségével ellenőrizhetjük, hogy a kódunk a várt módon működik-e.
+- **beforeAll**: A tesztcsoport elején egyszer fut le. Általában a tesztekhez szükséges beállítások elvégzésére használják.
+- **afterAll**: A tesztcsoport végén egyszer fut le. Általában a tesztek utáni takarítási feladatokra használják.
+- **vi**: A Vitest objektuma, amely különböző tesztelési funkciókat biztosít, mint például a mocking és spying.
+
+A **React Testing Library** a következő alapelvekre épül:
+
+- **Renderelés**: A tesztelendő komponenst a render függvénnyel jelenítjük meg a virtuális DOM-ban.
+- **Lekérdezés**: A screen és within objektumok segítségével lekérdezhetjük az elemeket a DOM-ból. A lekérdezések a felhasználó által látható elemekre és azok tulajdonságaira összpontosítanak (pl. szöveg, szerep, aria címke). Kerüljük az olyan lekérdezéseket, amelyek a belső implementációtól függenek (pl. osztálynevek, ID-k).
+- **Interakció**: A fireEvent segítségével szimulálhatjuk a felhasználói interakciókat, mint például kattintás, gépelés, űrlapküldés.
+- **Assertálás**: Az expect segítségével ellenőrizhetjük a várt eredményeket, például hogy egy elem megjelenik-e, tartalmaz-e egy bizonyos szöveget, vagy hogy egy esemény bekövetkezett-e.
+
+Importok: A tesztkód importálja a szükséges React Testing Library függvényt (render), valamint a tesztelendő komponenst.
+
+```typescript
+import { render } from '@testing-library/react';
+import MyComponent from './MyComponent';
+```
+
+
+## Környezeti Beállítások
+
+```typescript
+const key = process.env.MESSAGES_ENCRYPTION_KEY;
+process.env.MESSAGES_ENCRYPTION_KEY = undefined;
+await expect(asyncFunction()).rejects.toThrow("Expected error message");
+process.env.MESSAGES_ENCRYPTION_KEY = key; // Restore
+```
+
+## Felhasznált konstans változók
+
+A titkosítási algoritmushoz és kulcshoz tartozó konstansok definiálása.
+
+```typescript
+// A megvalósításban használt konstansok
+const ENCRYPTION_ALGORITHM = "aes-256-gcm";
+const IV_LENGTH = 16;
+const TAG_LENGTH = 16;
+const TEST_ENCRYPTION_KEY = "12345678901234567890123456789012"; // 32 chars test key
+```
+## Példa tesztkód elemzése
+
+Az alábbiakban a megadott tesztkód elemzése található, amely bemutatja a Vitest használatát egy titkosítási/visszafejtési funkció tesztelésére.
+
+## Állítások (assertions)
+
+### Alap Állítások (assertions)
+
+```typescript
+// Érték ellenőrzések
+expect(result).toBe(expectedValue);
+expect(result).toBeTruthy();
+expect(result).toBeNull();
+expect(array).toHaveLength(3);
+
+// Típus ellenőrzések
+expect(typeof result).toBe("string");
+expect(result).toBeInstanceOf(Error);
+```
+
+### Aszinkron Tesztelés
+
+```typescript filename="__tests__/actions/encrypt.test.ts"
+it("should use correct crypto parameters", async () => {
+const mockRandomBytes = vi.spyOn(crypto, "randomBytes");
+const mockCreateCipheriv = vi.spyOn(crypto, "createCipheriv");
+
+const message = "Test message";
+await encryptMessage(message);
+
+expect(mockRandomBytes).toHaveBeenCalledWith(IV_LENGTH);
+expect(mockCreateCipheriv).toHaveBeenCalledWith(
+    ENCRYPTION_ALGORITHM,
+    expect.any(Buffer),
+    expect.any(Buffer)
+);
+
+mockRandomBytes.mockRestore();
+mockCreateCipheriv.mockRestore();
+});
+```
+
+## Mocking
+
+A **mocking** a Vitestben egy olyan technikát jelent, amellyel a kódunkban használt függvényeket, objektumokat, vagy állapotokat szimuláljuk, hogy a tesztjeinkben a kívánt viselkedést el tudjuk érni. A Vitestben a `vi` objektumot használhatjuk a mock függvények létrehozására, amelyekkel a kívánt paraméterekkel hívhatjuk meg a függvényeket, és ellenőrizhetjük, hogy a függvények a várt módon működnek-e.
+
+### Spy Funkciók
+
+```typescript
+const mockRandomBytes = vi.spyOn(crypto, "randomBytes");
+
+// Spy használata után
+expect(mockFunction).toHaveBeenCalledWith(expectedArgs);
+
+// Spy visszaállítása
+mockFunction.mockRestore();
+```
+
+### Példa a Vitest tesztekből
+
+```typescript filename="__tests__/actions/decrypt.test.ts"
+const mockRandomBytes = vi.spyOn(crypto, "randomBytes");
+const mockCreateCipheriv = vi.spyOn(crypto, "createCipheriv");
+
+// Ellenőrzés
+expect(mockRandomBytes).toHaveBeenCalledWith(IV_LENGTH);
+expect(mockCreateCipheriv).toHaveBeenCalledWith(
+    ENCRYPTION_ALGORITHM,
+    expect.any(Buffer),
+    expect.any(Buffer)
+);
+```
+
+## Tesztelés a React Testing Library segítségével
+
+Ebben a példában a **Vitest** és a **React Testing Library** használatával teszteljük egy **React komponens**, a `Page`, renderelését. A következő kódot használjuk a teszt futtatására:
+
+```typescript filename="__tests__/components/page.test.tsx"
+import { describe, test } from 'vitest'
+import { render } from '@testing-library/react'
+import Page from '@/app/page'
+
+describe('Page', () => {
+    test('should render', () => {
+        render(<Page />)
+    })
+})
+```
+
+## Hibakezelés Tesztelése
+
+### Hibaesetek Ellenőrzése
+
+```typescript filename="__tests__/actions/decrypt.test.ts"
+it("should throw for non-string input", async () => {
+    await expect(decryptMessage(123)).rejects.toThrow();
+})
+```
+
+### Környezeti Hibák Kezelése
+
+```typescript filename="__tests__/actions/encrypt.test.ts"
+it("should throw error if encryption key is not set", async () => {
+// Temporarily remove encryption key
+const key = process.env.MESSAGES_ENCRYPTION_KEY;
+process.env.MESSAGES_ENCRYPTION_KEY = undefined;
+
+const message = "Test message";
+await expect(encryptMessage(message)).rejects.toThrow(
+    "Encryption key must be 32 characters long"
+);
+
+// Restore key
+process.env.MESSAGES_ENCRYPTION_KEY = key;
+});
+```
+
+## Speciális Funkciók
+
+### expect.any()
+
+```typescript
+expect(mockFunction).toHaveBeenCalledWith(
+    expect.any(Buffer),
+    expect.any(Buffer)
+);
+```
+
+## Ellenőrzések
+
+A tesztek sikerességét az alábbi kép demonstrálja:
+
+
+
+
+## Hatékony Vitest gyakorlatok
+
+1. **Izolált Tesztek**
+   - Minden teszt független legyen a többitől
+   - Környezeti változók visszaállítása
+   - Mock függvények tisztítása
+
+2. **Hatékony Mockingolás**
+   - Csak a szükséges függvények mockolása
+   - Spy-ok használata a hívások ellenőrzésére
+   - Mock függvények visszaállítása
+
+3. **Környezeti Változók Kezelése**
+   - Eredeti értékek mentése
+   - Tesztek után visszaállítás
+   - Hiányzó értékek tesztelése
+
+4. **Aszinkron Kód Tesztelése**
+   - async/await használata
+   - Hibakezelés tesztelése
+   - Promise-ok megfelelő kezelése
+
+## További Kiegészítések
+
+- Kivételek kezelésének tesztelése
+- Különböző inputok tesztelése
+- Regex vizsgálat
+- Függvények hatásainak tesztelése
+- Edge cases tesztelése

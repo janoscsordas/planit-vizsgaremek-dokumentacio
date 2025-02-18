@@ -11,11 +11,9 @@ const meta = {
   zod: "",
   kanban: "",
   planieai: "",
+  testing: "",
   ui_libraries: {
     title: "UI Könyvárak",
-  },
-  testing: {
-    title: "Tesztelés",
   },
 }
 
