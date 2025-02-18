@@ -9,7 +9,7 @@ import { Steps, Callout } from "nextra/components"
 
 ## Áttekintés
 
-Az alkalmazás autentikációja az [Auth.js v5 (beta)](https://authjs.dev/) könyvtárat használja. Az **Auth.js** egy rugalmas, biztonságos authentikációs megoldást biztosít különböző bejelentkezési módszerek támogatásával.
+Az alkalmazás autentikációja az [Auth.js v5 (beta)](https://authjs.dev/) könyvtárat használja. Az **Auth.js** egy rugalmas, biztonságos autentikációs megoldást biztosít különböző bejelentkezési módszerek támogatásával.
 
 ## Telepítés
 
@@ -231,7 +231,7 @@ export const { auth, signIn, signOut, handlers } = NextAuth(authConfig)
 
 ## Middleware Konfiguráció
 
-A `Middleware.ts` fájlban:
+A `middleware.ts` fájlban:
 
 Az exportált config a (fájl alján) felel, a megadott útvonalak levédéséért. Amikor a felhasználó egy olyan útvonalra lép, amely a config-ban megvan adva, akkor a middleware function oldal töltés előtt lefutásra kerül. **Így IS** védjük a megadott útvonalakat.
 
