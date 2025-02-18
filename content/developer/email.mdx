@@ -3,7 +3,7 @@ sidebarTitle: E-mailes hitelesítés
 title: E-mailes hitelesítés
 ---
 
-## E-mailes hitelesítés
+# E-mailes hitelesítés
 
 A projektben `Resend`-et használunk az email kommunikáció kezelésére, mivel ez egy modern és megbízható megoldást kínál a tranzakciós és marketing emailek küldésére. A Resend mellett szóló főbb érvek:
 
@@ -42,7 +42,6 @@ export async function sendVerificationEmail(
   name: string,
   verificationLink: string
 ) {
-
   const resend = new Resend(process.env.RESEND_API_KEY)
 
   await resend.emails.send({

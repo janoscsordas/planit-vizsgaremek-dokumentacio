@@ -6,14 +6,17 @@ title: Kanban tábla
 # Kanban tábla - dnd-kit implementáció
 
 ## Áttekintés
+
 A projektben használt kanban tábla a **drag-and-drop funkcionalitásra**, a `@dnd-kit` könyvtárra épül, amely egy **hatékony és akadálymentes megoldást** biztosít a React alkalmazásokban. Az implementáció három fő komponensből áll: a húzható feladatkártyákból **(TaskCard)**, a célterületekből **(Column)** és a fő DndContext komponensből **(DndTaskMain)**.
 
 ## Komponensek
 
 ### TaskCard Komponens
+
 A TaskCard komponens a `useDraggable` hook-ot használja a húzható feladatkártyák létrehozásához.
 
 #### Főbb tulajdonságok:
+
 - Egyedi azonosító alapján követhető (`task.id`)
 - Vizuális visszajelzést ad húzás közben (transform tulajdonság)
 - Akadálymentes kezelőfelületet biztosít
@@ -22,71 +25,81 @@ A TaskCard komponens a `useDraggable` hook-ot használja a húzható feladatkár
 - Megakadályozza a redundáns eseménykezelést
 
 ### Column Komponens
+
 A Column komponens a `useDroppable` hook-ot használja a célterületek definiálásához.
 
 #### Főbb tulajdonságok:
+
 - Egyedi azonosítóval rendelkező drop zónák
 - Vizuális visszajelzés az üres állapotról
 - Rugalmas magasságkezelés
 - Reszponzív design
 
 ### DndTaskMain Komponens
+
 A fő komponens, amely a DndContext-et biztosítja és kezeli a drag-and-drop logikát.
 
 #### Állapotkezelés:
+
 ```typescript filename="dnd-task-main.tsx"
-const { tasks, setTasks } = useTaskContext();
+const { tasks, setTasks } = useTaskContext()
 ```
 
 #### Oszlopok definiálása:
+
 ```typescript filename="dnd-task-main.tsx"
 const COLUMNS: ColumnType[] = [
   { id: "pending", title: "Elvégzendő" },
   { id: "in progress", title: "Folyamatban" },
   { id: "finished", title: "Befejezett" },
-];
+]
 ```
 
 #### Rendezési logika:
+
 ```typescript filename="dnd-task-main.tsx"
 const sortTasks = (a: EnrichedTask, b: EnrichedTask) => {
-  const priorityOrder = { high: 3, medium: 2, low: 1 };
+  const priorityOrder = { high: 3, medium: 2, low: 1 }
   if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-    return priorityOrder[b.priority] - priorityOrder[a.priority];
+    return priorityOrder[b.priority] - priorityOrder[a.priority]
   }
-  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-};
+  return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+}
 ```
 
 #### Drag and Drop kezelés:
+
 ```typescript filename="dnd-task-main.tsx"
 async function handleDragEnd(event: DragEndEvent) {
-  const { active, over } = event;
-  if (!over) return;
-  
-  const taskId = active.id as string;
-  const newStatus = over.id as TaskStatus;
+  const { active, over } = event
+  if (!over) return
+
+  const taskId = active.id as string
+  const newStatus = over.id as TaskStatus
   // ... státusz frissítés és hibakezelés
 }
 ```
 
 ## Optimalizációk
 
-### Memorizáció 
+### Memorizáció
+
 - `useMemo` használata a rendezett feladatok számításához
 - Feladatok szűrése és rendezése oszloponként
+
 ```typescript filename="dnd-task-main.tsx"
 const sortedColumnTasks = useMemo(() => {
   return COLUMNS.reduce((acc, column) => {
     acc[column.id] = tasks
       .filter((task) => task.status === column.id)
-      .sort(sortTasks);
-    return acc;
-  }, {} as Record<TaskStatus, EnrichedTask[]>);
-}, [tasks]);
+      .sort(sortTasks)
+    return acc
+  }, {} as Record<TaskStatus, EnrichedTask[]>)
+}, [tasks])
 ```
 
 ### Korlátozások
+
 - `restrictToWindowEdges` modifier használata a húzás korlátozásához
 - Optimalizált újrarenderelés
 - Suspense használata a lazy loadinghoz
@@ -94,6 +107,7 @@ const sortedColumnTasks = useMemo(() => {
 ## Hibakezelés
 
 ### Optimista frissítések
+
 1. Azonnali UI frissítés
 2. Backend művelet végrehajtása
 3. Hiba esetén visszaállítás
@@ -111,17 +125,19 @@ if (!result.success) {
 ## Típusdefiníciók
 
 ```typescript filename="dnd-task-main.tsx"
-export type TaskStatus = "pending" | "in progress" | "finished";
+export type TaskStatus = "pending" | "in progress" | "finished"
 export type ColumnType = {
-  id: TaskStatus;
-  title: string;
-};
+  id: TaskStatus
+  title: string
+}
 ```
 
 ## Reszponzivitás
+
 - Flexbox alapú elrendezés
 - Oszlopok adaptív megjelenítése
 - Gap-ek használata az elemek között
+
 ```css
 .column-layout {
   flex-col gap-8 xl:flex-row
@@ -129,21 +145,16 @@ export type ColumnType = {
 ```
 
 ## Teljesítmény Megfontolások
+
 1. Memorizált értékek használata
 2. Optimista UI frissítések
 3. Suspense alapú kód szétválasztás
 4. Hatékony újrarenderelés kezelés
 
 ## Továbbfejlesztési Lehetőségek
+
 1. Drag animációk finomhangolása
 2. Többszörös kijelölés támogatása
 3. Drag preview testreszabása
 4. Billentyűzetes navigáció bővítése
 5. Offline támogatás implementálása
-
-## Források
-
-- *https://dndkit.com/*
-- *https://docs.dndkit.com/api-documentation/context-provider*
-- *https://docs.dndkit.com/api-documentation/droppable*
-- *https://docs.dndkit.com/api-documentation/draggable*
