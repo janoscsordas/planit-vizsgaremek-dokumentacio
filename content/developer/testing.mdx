@@ -9,7 +9,7 @@ title: Tesztelés
 
 Az alkalmazásban a [Vitest](https://vitest.dev/) tesztelő könyvtárat használjuk. A **Vitest** egy modern **JavaScript/TypeScript** tesztelési keretrendszer, amely különösen jól illeszkedik a **Vite** alapú projektekhez. A könyvtár **Jest-kompatibilis API**-t kínál, ami megkönnyíti az átállást más projektekről.
 
-Az alkalmazásban a [React Testing Library](https://testing-library.com/) tesztelő könyvtárat használjuk. A **React Testing Library** egy olyan tesztelő könyvtár, amely a **React komponensek tesztelésére** összpontosít a **felhasználói interakciók szimulálásával**.  A hangsúly a **felhasználó szemszögéből történő tesztelésen** van, nem pedig a komponens **belső megvalósításán**. Ezáltal a tesztek kevésbé törékenyek lesznek, és jobban tükrözik a **valós felhasználói viselkedést**.
+Az alkalmazásban a [React Testing Library](https://testing-library.com/) tesztelő könyvtárat használjuk. A **React Testing Library** egy olyan tesztelő könyvtár, amely a **React komponensek tesztelésére** összpontosít a **felhasználói interakciók szimulálásával**. A hangsúly a **felhasználó szemszögéből történő tesztelésen** van, nem pedig a komponens **belső megvalósításán**. Ezáltal a tesztek kevésbé törékenyek lesznek, és jobban tükrözik a **valós felhasználói viselkedést**.
 
 ## Telepítés
 
@@ -28,7 +28,7 @@ bun add @testing-library/jest-dom"
 Importok: A tesztkód importálja a szükséges Vitest függvényeket (describe, it, expect, beforeAll, afterAll, vi), valamint a tesztelendő függvényeket (decryptMessage, encryptMessage) és a crypto modult.
 
 ```typescript
-import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, vi } from "vitest"
 ```
 
 Az alkalmazásban használt **Vitest** építőelemek:
@@ -50,18 +50,17 @@ A **React Testing Library** a következő alapelvekre épül:
 Importok: A tesztkód importálja a szükséges React Testing Library függvényt (render), valamint a tesztelendő komponenst.
 
 ```typescript
-import { render } from '@testing-library/react';
-import MyComponent from './MyComponent';
+import { render } from "@testing-library/react"
+import MyComponent from "./MyComponent"
 ```
-
 
 ## Környezeti Beállítások
 
 ```typescript
-const key = process.env.MESSAGES_ENCRYPTION_KEY;
-process.env.MESSAGES_ENCRYPTION_KEY = undefined;
-await expect(asyncFunction()).rejects.toThrow("Expected error message");
-process.env.MESSAGES_ENCRYPTION_KEY = key; // Restore
+const key = process.env.MESSAGES_ENCRYPTION_KEY
+process.env.MESSAGES_ENCRYPTION_KEY = undefined
+await expect(asyncFunction()).rejects.toThrow("Expected error message")
+process.env.MESSAGES_ENCRYPTION_KEY = key // Restore
 ```
 
 ## Felhasznált konstans változók
@@ -70,11 +69,12 @@ A titkosítási algoritmushoz és kulcshoz tartozó konstansok definiálása.
 
 ```typescript
 // A megvalósításban használt konstansok
-const ENCRYPTION_ALGORITHM = "aes-256-gcm";
-const IV_LENGTH = 16;
-const TAG_LENGTH = 16;
-const TEST_ENCRYPTION_KEY = "12345678901234567890123456789012"; // 32 chars test key
+const ENCRYPTION_ALGORITHM = "aes-256-gcm"
+const IV_LENGTH = 16
+const TAG_LENGTH = 16
+const TEST_ENCRYPTION_KEY = "12345678901234567890123456789012" // 32 chars test key
 ```
+
 ## Példa tesztkód elemzése
 
 Az alábbiakban a megadott tesztkód elemzése található, amely bemutatja a Vitest használatát egy titkosítási/visszafejtési funkció tesztelésére.
@@ -85,36 +85,36 @@ Az alábbiakban a megadott tesztkód elemzése található, amely bemutatja a Vi
 
 ```typescript
 // Érték ellenőrzések
-expect(result).toBe(expectedValue);
-expect(result).toBeTruthy();
-expect(result).toBeNull();
-expect(array).toHaveLength(3);
+expect(result).toBe(expectedValue)
+expect(result).toBeTruthy()
+expect(result).toBeNull()
+expect(array).toHaveLength(3)
 
 // Típus ellenőrzések
-expect(typeof result).toBe("string");
-expect(result).toBeInstanceOf(Error);
+expect(typeof result).toBe("string")
+expect(result).toBeInstanceOf(Error)
 ```
 
 ### Aszinkron Tesztelés
 
 ```typescript filename="__tests__/actions/encrypt.test.ts"
 it("should use correct crypto parameters", async () => {
-const mockRandomBytes = vi.spyOn(crypto, "randomBytes");
-const mockCreateCipheriv = vi.spyOn(crypto, "createCipheriv");
+  const mockRandomBytes = vi.spyOn(crypto, "randomBytes")
+  const mockCreateCipheriv = vi.spyOn(crypto, "createCipheriv")
 
-const message = "Test message";
-await encryptMessage(message);
+  const message = "Test message"
+  await encryptMessage(message)
 
-expect(mockRandomBytes).toHaveBeenCalledWith(IV_LENGTH);
-expect(mockCreateCipheriv).toHaveBeenCalledWith(
+  expect(mockRandomBytes).toHaveBeenCalledWith(IV_LENGTH)
+  expect(mockCreateCipheriv).toHaveBeenCalledWith(
     ENCRYPTION_ALGORITHM,
     expect.any(Buffer),
     expect.any(Buffer)
-);
+  )
 
-mockRandomBytes.mockRestore();
-mockCreateCipheriv.mockRestore();
-});
+  mockRandomBytes.mockRestore()
+  mockCreateCipheriv.mockRestore()
+})
 ```
 
 ## Mocking
@@ -124,28 +124,28 @@ A **mocking** a Vitestben egy olyan technikát jelent, amellyel a kódunkban has
 ### Spy Funkciók
 
 ```typescript
-const mockRandomBytes = vi.spyOn(crypto, "randomBytes");
+const mockRandomBytes = vi.spyOn(crypto, "randomBytes")
 
 // Spy használata után
-expect(mockFunction).toHaveBeenCalledWith(expectedArgs);
+expect(mockFunction).toHaveBeenCalledWith(expectedArgs)
 
 // Spy visszaállítása
-mockFunction.mockRestore();
+mockFunction.mockRestore()
 ```
 
 ### Példa a Vitest tesztekből
 
 ```typescript filename="__tests__/actions/decrypt.test.ts"
-const mockRandomBytes = vi.spyOn(crypto, "randomBytes");
-const mockCreateCipheriv = vi.spyOn(crypto, "createCipheriv");
+const mockRandomBytes = vi.spyOn(crypto, "randomBytes")
+const mockCreateCipheriv = vi.spyOn(crypto, "createCipheriv")
 
 // Ellenőrzés
-expect(mockRandomBytes).toHaveBeenCalledWith(IV_LENGTH);
+expect(mockRandomBytes).toHaveBeenCalledWith(IV_LENGTH)
 expect(mockCreateCipheriv).toHaveBeenCalledWith(
-    ENCRYPTION_ALGORITHM,
-    expect.any(Buffer),
-    expect.any(Buffer)
-);
+  ENCRYPTION_ALGORITHM,
+  expect.any(Buffer),
+  expect.any(Buffer)
+)
 ```
 
 ## Tesztelés a React Testing Library segítségével
@@ -153,14 +153,14 @@ expect(mockCreateCipheriv).toHaveBeenCalledWith(
 Ebben a példában a **Vitest** és a **React Testing Library** használatával teszteljük egy **React komponens**, a `Page`, renderelését. A következő kódot használjuk a teszt futtatására:
 
 ```typescript filename="__tests__/components/page.test.tsx"
-import { describe, test } from 'vitest'
-import { render } from '@testing-library/react'
-import Page from '@/app/page'
+import { describe, test } from "vitest"
+import { render } from "@testing-library/react"
+import Page from "@/app/page"
 
-describe('Page', () => {
-    test('should render', () => {
-        render(<Page />)
-    })
+describe("Page", () => {
+  test("should render", () => {
+    render(<Page />)
+  })
 })
 ```
 
@@ -170,7 +170,7 @@ describe('Page', () => {
 
 ```typescript filename="__tests__/actions/decrypt.test.ts"
 it("should throw for non-string input", async () => {
-    await expect(decryptMessage(123)).rejects.toThrow();
+  await expect(decryptMessage(123)).rejects.toThrow()
 })
 ```
 
@@ -178,18 +178,18 @@ it("should throw for non-string input", async () => {
 
 ```typescript filename="__tests__/actions/encrypt.test.ts"
 it("should throw error if encryption key is not set", async () => {
-// Temporarily remove encryption key
-const key = process.env.MESSAGES_ENCRYPTION_KEY;
-process.env.MESSAGES_ENCRYPTION_KEY = undefined;
+  // Temporarily remove encryption key
+  const key = process.env.MESSAGES_ENCRYPTION_KEY
+  process.env.MESSAGES_ENCRYPTION_KEY = undefined
 
-const message = "Test message";
-await expect(encryptMessage(message)).rejects.toThrow(
+  const message = "Test message"
+  await expect(encryptMessage(message)).rejects.toThrow(
     "Encryption key must be 32 characters long"
-);
+  )
 
-// Restore key
-process.env.MESSAGES_ENCRYPTION_KEY = key;
-});
+  // Restore key
+  process.env.MESSAGES_ENCRYPTION_KEY = key
+})
 ```
 
 ## Speciális Funkciók
@@ -198,31 +198,36 @@ process.env.MESSAGES_ENCRYPTION_KEY = key;
 
 ```typescript
 expect(mockFunction).toHaveBeenCalledWith(
-    expect.any(Buffer),
-    expect.any(Buffer)
-);
+  expect.any(Buffer),
+  expect.any(Buffer)
+)
 ```
 
 ## Ellenőrzések
 
-A tesztek sikerességét az alábbi kép demonstrálja:
+A tesztek során a **fő komponensek funkcióit**, a **munkafolyamatot**, a **felhasználói bejelentkezést**, a **feladatokat**, a **projekt beállításokat** és a **fiókbeállításokat** ellenőriztük. A tesztek **sikeresen lefutottak**, ami bizonyítja, hogy **a rendszer megfelelően működik**. A tesztek sikerességét az alábbi kép demonstrálja.
 
-
-
+<img
+  className="w-[64rem] mt-8 mx-auto rounded"
+  src="/images/vitest_tests.png"
+/>
 
 ## Hatékony Vitest gyakorlatok
 
 1. **Izolált Tesztek**
+
    - Minden teszt független legyen a többitől
    - Környezeti változók visszaállítása
    - Mock függvények tisztítása
 
 2. **Hatékony Mockingolás**
+
    - Csak a szükséges függvények mockolása
    - Spy-ok használata a hívások ellenőrzésére
    - Mock függvények visszaállítása
 
 3. **Környezeti Változók Kezelése**
+
    - Eredeti értékek mentése
    - Tesztek után visszaállítás
    - Hiányzó értékek tesztelése
