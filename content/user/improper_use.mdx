@@ -1,0 +1,49 @@
+# Helytelen Használatból Adódó Hibajelzések
+
+Az alkalmazásban az olyan részeken, ahol vannak beviteli mezők, a működéshez ezeket kötelező kitölteni. Mindegyik rendelkezik valamilyen kritériummal, leggyakrabban a minimum és maximum karakterszám van meghatározva, de vannak olyan esetek, mint például a regisztrációs felület, ahol a jelszónak több feltételnek is meg kell felelnie. A helytelen kitöltésekből adódó hibákról a program visszajelzést küld a felhasználónak. 
+
+### Bejelentkezés
+
+Ez a hibajelzés akkor jelenik meg a felhasználónak, amikor a bejelentkezési felületen, a megadott email cím és/vagy jelszó nem egyezik a regisztrált adatokkal.
+
+<img className="w-[24rem] mt-8 mx-auto rounded" src="/images/login_error.png" />
+
+### Regisztráció
+
+A regisztrációnál fontos, hogy hiteles email címet adjon meg a felhasználó, ezentúl az is, hogyha egy email címmel már regisztrált, akkor ezzel már nem tud új fiókot regisztrálni. Amikor már regisztrált email-el próbál a felhasználó fiókot létrehozni akkor az alábbi hiba jelenik meg.
+
+<img className="w-[24rem] mt-8 mx-auto rounded" src="/images/signup_error.png" />
+
+### Jelszó módosítása 
+
+Új jelszó beállításánál az új jelszót kétszer kell megadni, ezzel megerősítve. A két mezőbe beírt jelszónak pontosan kell egyeznie egymással, ellenben "A jelszavak nem egyeznek!" hibát adja ki.
+
+<img className="w-[24rem] mt-8 mx-auto rounded" src="/images/password_error.png" />
+
+### Projekt létrehozása
+
+A projekt létrehozásánál ügyelni kell a projekt nevének hosszúságára, hiszen minimum 4 karakternek kell lennie. Ha a név nincs meg minimum 4 karakter, akkor hibát fog kiadni.
+
+<img className="w-[40rem] mt-8 mx-auto rounded" src="/images/create_project_error.png" />
+
+### Új feladat létrehozása
+
+Itt is érvényes a feladat címénél és leírásánál, hogy legalább 4 karakter hosszúnak kell lenniük. Ha nem megfelelőek a megadott adatok, az elkészítés sikertelenségéről hibát ad a párbeszédablak.
+
+<img className="w-[28rem] mt-8 mx-auto rounded" src="/images/new_task_error.png" />
+
+### Probléma létrehozása
+
+Probléma létrehozásánál is figyelni kell a megadott adatok hosszúságára. 
+
+<img className="w-[24rem] mt-8 mx-auto rounded" src="/images/issue_error.png" />
+
+### Tagok 
+
+Ahhoz, hogy új tagot hívjunk meg a projektünkbe, meg kell adni az email címét a meghívni kívánt tagnak. Ha nem adunk meg email címet, akkor a következő hibát adja ki.
+
+<img className="w-[24rem] mt-8 mx-auto rounded" src="/images/no_email_error.png" />
+
+Ha a felhasználó a saját email címét adja meg, akkor egy másik hibát ad ki.
+
+<img className="w-[24rem] mt-8 mx-auto rounded" src="/images/own_email_error.png" />
