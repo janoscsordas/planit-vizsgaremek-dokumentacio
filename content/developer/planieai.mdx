@@ -71,7 +71,7 @@ const chatCompletion = await client.chat.completions.create({
 
 ### Felhasználói Felület Komponens
 
-```typescript {43-46}
+```tsx {43-46}
 "use client"
 
 import { User } from "next-auth"
@@ -178,7 +178,7 @@ export default function ChatComponent({ user }: { user: User }) {
 
 ### Használat és integráció
 
-```typescript {2, 6} filename="app/chat/page.tsx"
+```tsx {2, 6} filename="app/chat/page.tsx"
 // Importáljuk a komponenst
 import ChatComponent from "@/components/aichat/chat-component"
 
