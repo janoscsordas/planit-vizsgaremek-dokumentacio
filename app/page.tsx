@@ -3,11 +3,11 @@ import Link from "next/link"
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen">
-      <h1 className="text-6xl font-bold text-center mt-32">
+      <h1 className="text-4xl md:text-6xl font-bold text-center mt-32">
         <span className="text-[#44ca85]">{"Planitapp" + " "}</span>
         Dokumentáció
       </h1>
-      <p className="text-xl text-center mt-8 text-gray-400">
+      <p className="text-lg md:text-xl text-center mt-8 text-gray-400">
         A Planitapp alkalmazás teljeskörű dokumentációja.
       </p>
       <p className="text-center mt-2 max-w-md text-gray-500 mx-auto">
