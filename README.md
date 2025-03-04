@@ -1,4 +1,4 @@
-# Planitapp Dokumentáció
+# Planitapp Dokumentáció Oldal
 
 Ez a dokumentáció [Next.js](https://nextjs.org/) és [Nextra](https://nextra.site/) segítségével készült.
 A dokumentáció elérhető a [docs.planitapp.hu](https://docs.planitapp.hu/) webcímen.
