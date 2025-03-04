@@ -1,35 +1,43 @@
-import { Footer, LastUpdated, Layout, Navbar } from "nextra-theme-docs";
-import { Banner, Head, Search } from "nextra/components";
-import { getPageMap } from "nextra/page-map";
-import "./globals.css";
-import "nextra-theme-docs/style.css";
+import { Footer, LastUpdated, Layout, Navbar } from "nextra-theme-docs"
+import { Banner, Head, Search } from "nextra/components"
+import { getPageMap } from "nextra/page-map"
+import "./globals.css"
+import "nextra-theme-docs/style.css"
+import Image from "next/image"
 
 export const metadata = {
   title: "Planitapp Dokumentáció",
   description: "Planitapp alkalmazás teljeskörű dokumentációja.",
-};
+}
 
 const banner = (
   <Banner storageKey="some-key">
     Megérkezett a Planitapp dokumentációja. 🎉
   </Banner>
-);
+)
 const navbar = (
   <Navbar
-    logo={<b>Planitapp</b>}
+    logo={
+      <Image
+        src="/images/full-logo.png"
+        alt="Planitapp logo"
+        width={150}
+        height={68}
+      ></Image>
+    }
     projectLink="https://github.com/janoscsordas/planit-vizsgaremek-fullstack"
   />
-);
+)
 const footer = (
   <Footer>
     MIT {new Date().getFullYear()} © Planitapp. Minden jog fenntartva.
   </Footer>
-);
+)
 
 export default async function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="hu" dir="ltr" suppressHydrationWarning>
@@ -66,5 +74,5 @@ export default async function RootLayout({
         </Layout>
       </body>
     </html>
-  );
+  )
 }
