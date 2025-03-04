@@ -15,6 +15,7 @@ const meta = {
   ui_libraries: {
     title: "UI Könyvárak",
   },
+  hosting: ""
 }
 
 export default meta

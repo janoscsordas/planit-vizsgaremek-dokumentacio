@@ -1,0 +1,90 @@
+---
+sidebarTitle: Hosting
+title: Hosting
+---
+
+import { Steps } from 'nextra/components'
+
+# Hosting
+
+A projektet illetve a **dokumentációnkat** a [Vercel](https://vercel.com/)-en hostoljuk. A Vercel a Next.js fejlesztői által létrehozott platform, amely a Next.js alkalmazások futtatására optimalizált, így zökkenőmentes telepítési élményt és kiváló teljesítményt biztosít.
+
+## Előfeltételek
+
+- Működő Next.js alkalmazás
+- GitHub, GitLab vagy Bitbucket fiók a forráskód tárolásához
+- Vercel fiók (ingyenes regisztrációra van lehetőség)
+
+## Telepítés
+
+<Steps>
+### Alkalmazás előkészítése
+
+Győződjünk meg róla, hogy a **Next.js** alkalmazásunk megfelelően működik lokálisan, és verziókezelés alatt áll. (pl. Git)
+
+```bash
+# Ellenőrizzük, hogy a Next.js alkalmazás helyesen működik
+bun run dev
+
+# Ha még nincs verziókezelve
+git init
+git add .
+git commit -m "commit message"
+```
+
+### Kód feltöltése Remote Repositoryba
+
+Töltsük fel a kódot a távoli repositoryba.
+
+```bash
+git remote add origin <remote_repository_url>
+git push -u origin main
+```
+
+### Projekt inicializálása Vercel-en
+
+    1. Jelentkezzünk be a Vercel fiókunkba
+    2. A dashboard-on a "New Project"
+    3. Importáljuk a repository-t a Vercel-be a megfelelő szolgáltatóval (pl. GitHub)
+    4. Válasszuk ki a projekthez tartozó repository-t
+
+### Konfigurálás
+
+A Vercel automatikusan felismeri a Next.js projekteket, de általában nem igényel további konfigurációt.
+
+- **Project Name:** Adjuk meg a projekt nevét
+- **Framework Preset:** Automatikusan Next.js
+- **Build and Output Settings:** Általában automatikusan konfigurálva
+- **Environment Variables:** Ha szükséges, beállíthatjuk környezeti változókat
+
+### Telepítés (Deploy)
+
+A Vercel a Deploy gombra kattintva telepíti a Next.js alkalmazást, és a telepítés után a Vercel által biztosított URL-en érhető el.
+</Steps>
+
+## Környezeti változók kezelése
+
+Környezeti változók hozzáadása:
+
+1. A projekt dashboardján kattints a "Settings" gombra
+2. Válaszd a "Environment Variables" menüpontot
+3. Add hozzá a kulcs-érték párokat
+4. Meghatározhatod, hogy mely környezetekben legyenek elérhetők (Production, Preview, Development)
+
+## Hibaelhárítás
+
+Ha problémákba ütközöl a deployment során:
+
+1. Ellenőrizd a build log-okat a hibaüzenetekért
+2. Győződj meg róla, hogy a szükséges környezeti változók be vannak állítva
+3. Ellenőrizd, hogy a Next.js verzió kompatibilis-e a Vercel platformmal
+4. Használd a Vercel CLI-t lokális teszteléshez: npx vercel dev
+
+## Összefoglalás
+
+A Vercel a legegyszerűbb és leghatékonyabb módja a Next.js alkalmazások hosztolásának, hiszen:
+
+- Optimalizált a Next.js alkalmazásokhoz
+- Edge Network-öt használ a gyorsabb betöltéshez
+- Egyszerű domain és SSL beállítások
+- Ingyenes tier elérhető kisebb projektekhez
